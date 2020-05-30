@@ -1,19 +1,31 @@
 {
-"name": "marvinjanssen/magicmounter",
+"name": "frdl/mount-manager",
 "description": "PHP stream wrapper library to magically mount local or remote filesystems.",
-"keywords": ["fs","ftp","ftps","php"],
-"homepage": "https://github.com/marvinjanssen/magicmounter",
+"type" : "frdl-extension",
+"keywords": ["protocols", "mount", "StreamWrapper", "fs","ftp","ftps","php"],
+"homepage": "https://github.com/frdl/mount-manager",
 "license": ["MIT"],
 "authors":
 	[
 		{
 		"name": "Marvin Janssen",
 		"homepage": "http://marvinjanssen.me"
+		},
+		{
+		"name": "Till Wehowski",
+		"homepage": "https://webfan.de"
 		}
 	],
-"autoload":
-	{
-	"files": ["src/magicmounter.php"],
-	"classmap": ["src/"]
-	}
+"require" : { 
+    "php": ">=7.2",
+    "frdl/frdlweb-composer-installers" : ">=0.2",		
+    "degraciamathieu/manager" : "1.1.1",
+    "frdl/web" : "*"
+},
+"autoload": {
+          "psr-4" : {
+	      "frdl\\mount\\": "lib/"	  
+	  }
+	
+}
 }
