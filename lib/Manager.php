@@ -177,13 +177,13 @@ class Manager
 	 */
 	public static function driver($type,$driver = null)
 		{
-		if (func_num_args() === 1)
+		if (\func_num_args() === 1)
 			{
-			$class = isset(self::$drivers[$type]) ? self::$drivers[$type] : '\\MagicMounter\\driver\\'.$type;
+			$class = isset(self::$drivers[$type]) ? self::$drivers[$type] : __NAMESPACE__.'\\driver\\'.$type;
 			return class_exists($class) ? $class : null;
 			}
-		if (!is_subclass_of($driver,'\\MagicMounter\\Driver'))
-			throw new Exception("Driver '".$name."', should implement interface \\MagicMounter\\Driver.",4);
+		if (!is_subclass_of($driver,__NAMESPACE__.'\\Driver'))
+			throw new Exception("Driver '".$name."', should implement interface \\frdl\\mount\\Driver.",4);
 		if (self::$drivers[$type] === null)
 			unset(self::$drivers[$type]);
 		else
@@ -195,21 +195,23 @@ class Manager
 	 * @param string|resource $magic_stream Mount name or magic stream resource.
 	 * @return mixed
 	 */
-	public static function quote($magic_stream/*, ...*/)
-		{
-		$parameters = func_get_args();
+	public static function quote($scheme, $magic_stream/*, ...*/){
+		$parameters = \func_get_args();
 		array_shift($parameters);
-		if (is_string($magic_stream))
-			{
-			if ($driver = self::driver_object(strtolower($magic_stream)))
+		array_shift($parameters);
+		if (is_string($magic_stream)){
+			if ($driver = self::driver_object($scheme, strtolower($magic_stream))){
 				return $driver->quote($parameters,null);
-			throw new Exception("Unknown mount '".$magic_stream."'.",100);
 			}
-		$meta = stream_get_meta_data($magic_stream);
-		if ($meta['wrapper_type'] === 'user-space' && $meta['wrapper_data'] instanceof self)
-			return $meta['wrapper_data']->driver_quote($parameters);
-		throw new Exception('Passed stream is not a Magic stream.',3);
+			throw new Exception("Unknown mount '".$magic_stream."'.",100);			
 		}
+		
+		$meta = \stream_get_meta_data($magic_stream);
+		if ($meta['wrapper_type'] === 'user-space' && $meta['wrapper_data'] instanceof self){
+			return $meta['wrapper_data']->driver_quote($parameters);
+		}
+		  throw new Exception('Passed stream is not a Magic stream.',3);
+	}
 
 	/**
 	 * Passes the quote() call onto the driver.
@@ -239,8 +241,8 @@ class Manager
 		if ($flags === null)
 			$flags = \STREAM_IS_URL;
 		
-		   return stream_wrapper_register($alias, self::class,$flags);
-		}
+		   return stream_wrapper_register($alias, self::class,$flags);		
+	}
 
 	/**
 	 * MagicMounter driver autoloader. Should not be called directly.
@@ -250,12 +252,12 @@ class Manager
 	 */
 	public static function autoload($class)
 		{
-		$class = strtolower($class);
-		if (strpos($class,'magicmounter\\driver\\',0) === 0)
-			{
-			$path = __DIR__.'/driver/'.substr($class,20).'.php';
+		$class = \strtolower($class);
+		if (\strpos($class,\ltrim(__NAMESPACE__, '\\/').'\\driver\\',0) === 0){
+			$path = __DIR__.'/driver/'.\basename($class).'.php';
 			if (!file_exists($path))
 				throw new Exception("Specified driver class '".$class."' does not exist.",1);
+			
 			require $path;
 			}
 		}
@@ -269,19 +271,20 @@ class Manager
 	public function stream_open($path,$mode,$options,&$opened_path)
 		{
 		$path_info = parse_url($path);
-		if ($this->driver = self::driver_object($path_info['host']))
+		if ($this->driver = self::driver_object($path_info['scheme'], $path_info['host'])){
 			return $this->driver->stream_open($path_info,$mode,$options,$opened_path,$this);
-		throw new Exception("Unknown mount '".$path_info['host']."'.",100);
 		}
+		
+		  throw new Exception("Unknown mount '".$path_info['host']."'.",100);		
+	}
 
 	/**
 	 * StreamWrapper internal function
 	 * @internal
 	 */
-	public function stream_read($count)
-		{
-		return $this->driver->stream_read($count,$this);
-		}
+	public function stream_read($count){
+		return $this->driver->stream_read($count,$this);		
+	}
 
 	/**
 	 * StreamWrapper internal function
@@ -389,8 +392,9 @@ class Manager
 	public function unlink($path)
 		{
 		$path_info = parse_url($path);
-		if ($this->driver = self::driver_object($path_info['host']))
+		if ($this->driver = self::driver_object($path_info['scheme'], $path_info['host'])){
 			return $this->driver->unlink($path_info,$this);
+		}
 		throw new Exception("Unknown mount '".$path_info['host']."'.",100);
 		}
 
@@ -401,8 +405,9 @@ class Manager
 	public function url_stat($path,$flags)
 		{
 		$path_info = parse_url($path);
-		if ($this->driver = self::driver_object($path_info['host']))
+		if ($this->driver = self::driver_object($path_info['scheme'],$path_info['host'])){
 			return $this->driver->url_stat($path_info,$flags,$this);
+		}
 		throw new Exception("Unknown mount '".$path_info['host']."'.",100);
 		}
 
@@ -413,8 +418,9 @@ class Manager
 	public function stream_metadata($path,$option,$value)
 		{
 		$path_info = parse_url($path);
-		if ($this->driver = self::driver_object($path_info['host']))
+		if ($this->driver = self::driver_object($path_info['scheme'], $path_info['host'])){
 			return $this->driver->stream_metadata($path_info,$option,$value,$this);
+		}
 		throw new Exception("Unknown mount '".$path_info['host']."'.",100);
 		}
 
@@ -425,8 +431,9 @@ class Manager
 	public function mkdir($path,$mode,$options)
 		{
 		$path_info = parse_url($path);
-		if ($this->driver = self::driver_object($path_info['host']))
+		if ($this->driver = self::driver_object($path_info['scheme'], $path_info['host'])){
 			return $this->driver->mkdir($path_info,$mode,$options,$this);
+		}
 		throw new Exception("Unknown mount '".$path_info['host']."'.",100);
 		}
 
@@ -437,8 +444,9 @@ class Manager
 	public function rmdir($path,$options)
 		{
 		$path_info = parse_url($path);
-		if ($this->driver = self::driver_object($path_info['host']))
+		if ($this->driver = self::driver_object($path_info['scheme'], $path_info['host']))
 			return $this->driver->rmdir($path_info,$options,$this);
+		
 		throw new Exception("Unknown mount '".$path_info['host']."'.",100);
 		}
 
@@ -452,8 +460,10 @@ class Manager
 		$path_info_to = parse_url($path_to);
 		if ($path_info['host'] !== $path_info_to['host'])
 			throw new Exception('Cannot rename a file across magic mounts.',110);
-		if ($this->driver = self::driver_object($path_info['host']))
+		
+		if ($this->driver = self::driver_object($path_info['scheme'], $path_info['host']))
 			return $this->driver->rename($path_info,$path_info_to,$this);
+		
 		throw new Exception("Unknown mount '".$path_info['host']."'.",100);
 		}
 
@@ -464,8 +474,9 @@ class Manager
 	public function dir_opendir($path,$options)
 		{
 		$path_info = parse_url($path);
-		if ($this->driver = self::driver_object($path_info['host']))
+		if ($this->driver = self::driver_object($path_info['scheme'], $path_info['host']))
 			return $this->driver->dir_opendir($path_info,$options,$this);
+		
 		throw new Exception("Unknown mount '".$path_info['host']."'.",100);
 		}
 
