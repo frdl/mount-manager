@@ -1,9 +1,13 @@
 <?php
 namespace frdl\mount;
 
+use frdl\mount\Manager;
+
 interface Driver
 	{
 	public function __construct(array $options);
+	public static function getOptions() :array;
+	
 	public function quote(array $parameters,Manager $magic_stream = null);
 
 	// stream wrapper functions
