@@ -121,7 +121,7 @@ class Manager extends AbstractManager
     }
 	
     public function getDefaultDriver(){
-	    
+	return 'fs';
     }
    /**
      * Make a new driver instance.
