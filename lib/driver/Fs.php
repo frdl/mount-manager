@@ -29,6 +29,24 @@ class Fs implements Driver
 			throw new Exception("Could not mount '".$this->directory."', the directory does not exist.",202);
 		}
 
+	public static function getOptions(){
+	  return [
+	      [	  
+	        'key' => 'directory', 		  
+		'required' => true,      
+		'type' => function(string $dir){
+		     if(empty($dir) || !\is_dir($dir) || (!\is_readable($dir) && !\is_writable($dir)) ){
+			return false;     
+		     }else{
+			 return true;    
+		     }
+		},
+		'hint' => 'A (relative or absolute) path to a local directory.';     
+	      ],
+	  ];
+	}
+	
+	
 	public function __destruct()
 		{
 		$this->unmount();
