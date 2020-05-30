@@ -1,6 +1,8 @@
 <?php
 namespace frdl\mount;
 
+use Exception;
+
 class Manager
 {
 	protected static $_id = 0;
@@ -83,10 +85,7 @@ class Manager
 			self::alias($scheme);
 		  } 
 		
-		if(!isset(self::$mounts[$scheme])){			
-		   self::$mounts[$scheme] = [];	
-		}
-		
+
 		
 
 		
@@ -98,6 +97,11 @@ class Manager
 		if (class_exists($class)){
 			if (is_subclass_of($class, __NAMESPACE__.'\\Driver'))
 				{
+						if(!isset(self::$mounts[$scheme])){			  
+							self::$mounts[$scheme] = [];			
+						}
+		
+				
 				self::$mounts[$scheme][$name] = new $class($options);
 				// if (!self::$mounts[$name]->success())
 				// 	throw new Exception("Could not mount '".$name."'.",102);
