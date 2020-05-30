@@ -50,7 +50,7 @@ class Ftp implements Driver
 		'type' => function(string $host){
 		     return \preg_match("/^[a-z0-9\.\-]+$/", $host);
 		},
-		'hint' => 'The disks (web-)Host.';     
+		'hint' => 'The Ftp-Accounts (web-)Host.';     
 	      ],
 	      [	  
 	        'key' => 'username', 		  
@@ -59,7 +59,7 @@ class Ftp implements Driver
 		'type' => function(string $username){
 		     return \is_string($username);
 		},
-		'hint' => 'The Ftp-Accounts password.';     
+		'hint' => 'The Ftp-Accounts username.';     
 	      ],
 	      [	  
 	        'key' => 'password', 		  
@@ -69,6 +69,15 @@ class Ftp implements Driver
 		     return \is_string($password);
 		},
 		'hint' => 'The Ftp-Accounts password.';     
+	      ],
+	      [	  
+	        'key' => 'port', 		  
+		'required' => false,      
+		'default' => 21,      
+		'type' => function(int $i){
+		     return \is_int($i);
+		},
+		'hint' => 'The Ftp-Accounts port.';     
 	      ],
 	  ];
 	}
