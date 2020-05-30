@@ -117,6 +117,37 @@ class Manager
 		// return false;		
 	}
 
+	public static function validateOptions($class, array &$options){
+		$eFn = function($o, $opt){
+		    return 'You MUST provide a valid configuration option for the'.((true===$o['required'])?' required':'').' `'.$o['key'].'`-Field. ('.$o['hint'].')';
+		};
+		
+		$opt = call_user_func($class.'::getOptions');
+		foreach($opt as $o){
+		    if(isset($o['required']) && true=== $o['required'] && !isset($options[$o['key']])){
+	        	 return $eFn($o, $options[$o['key']]);
+		    }elseif(isset($o['default']) && (!isset($o['required']) || true!== $o['required']) && !isset($options[$o['key']])){
+			$options[$o['key']] = $o['default'];    
+		    }
+			
+	            if(true=== $o['required'] && 
+		      (
+		       (is_string($o['type']) && gettype($options[$o['key']]) !== $o['type']) 
+			||       
+			(is_callable($o['type']) && true !== call_user_func($o['type'],$options[$o['key']])  )    
+		      )
+		      ){
+			  return $eFn($o, $options[$o['key']]);
+		    }
+		}
+		
+		
+		return true;
+	}
+	
+
+	
+	
 	/**
 	 * Checks whether a magic mount exists.
 	 * @param string $name
