@@ -29,6 +29,7 @@ class Ftp implements Driver
 			throw new Exception('FTP extension not available',103);
 		if (!isset($options['host']))
 			throw new Exception("The 'host' option is required.",200);
+		
 		$options['username'] = isset($options['username']) ? $options['username'] : 'anonymous';
 		$options['password'] = isset($options['password']) ? $options['password'] : '';
 		$options['port'] = isset($options['port']) ? $options['port'] : 21;
@@ -41,6 +42,38 @@ class Ftp implements Driver
 		$this->options = $options;
 		}
 
+	public static function getOptions() :array{
+	  return [
+	      [	  
+	        'key' => 'host', 		  
+		'required' => true,      
+		'type' => function(string $host){
+		     return \preg_match("/^[a-z0-9\.\-]+$/", $host);
+		},
+		'hint' => 'The disks (web-)Host.';     
+	      ],
+	      [	  
+	        'key' => 'username', 		  
+		'required' => false,      
+		'default' => 'anonymous',      
+		'type' => function(string $username){
+		     return \is_string($username);
+		},
+		'hint' => 'The Ftp-Accounts password.';     
+	      ],
+	      [	  
+	        'key' => 'password', 		  
+		'required' => false,      
+		'default' => '',      
+		'type' => function(string $password){
+		     return \is_string($password);
+		},
+		'hint' => 'The Ftp-Accounts password.';     
+	      ],
+	  ];
+	}
+	
+	
 	public function __destruct()
 		{
 		$this->unmount();
