@@ -39,8 +39,8 @@ class Ftp implements Driver
 		$options['exception_on_read_error'] = isset($options['exception_on_read_error']) ? $options['exception_on_read_error'] : true;
 		if (!empty($options['directory']) && $options['directory'][0] !== '/')
 			$options['directory'] = '/'.$options['directory'];
-		$this->options = $options;
-		}
+		$this->options = $options;		
+	}
 
 	public static function getOptions() :array{
 	  return [
@@ -78,6 +78,33 @@ class Ftp implements Driver
 		     return \is_int($i);
 		},
 		'hint' => 'The Ftp-Accounts port.';     
+	      ],
+	      [	  
+	        'key' => 'timeout', 		  
+		'required' => false,      
+		'default' => 90,      
+		'type' => function(int $i){
+		     return \is_int($i);
+		},
+		'hint' => 'timeout.';     
+	      ],
+	      [	  
+	        'key' => 'measure_transfers', 		  
+		'required' => false,      
+		'default' => false,      
+		'type' => function(bool $i){
+		     return \is_bool($i);
+		},
+		'hint' => 'measure_transfers.';     
+	      ],
+	      [	  
+	        'key' => 'exception_on_read_error', 		  
+		'required' => false,      
+		'default' => true,      
+		'type' => function(bool $i){
+		     return \is_bool($i);
+		},
+		'hint' => 'exception_on_read_error.';     
 	      ],
 	      [	  
 	        'key' => 'directory', 		  
