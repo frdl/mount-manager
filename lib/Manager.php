@@ -1,10 +1,22 @@
 <?php
 namespace frdl\mount;
 
+use DeGraciaMathieu\Manager\Manager as AbstractManager;
 
-
-class Manager
+class Manager extends AbstractManager
 {
+	
+    /**
+     * @var boolean
+     */
+    protected $singleton = true;
+
+    /**
+     * @var \DeGraciaMathieu\Manager\Aggregator
+     */
+    protected $aggregator;
+	
+	
 	protected static $_id = 0;
 	protected static $wrapper = 'magic';
 	protected static $started = false;
@@ -25,6 +37,8 @@ class Manager
 
 	public function __construct(){
 		
+		parent::__construct();
+		
 		self::init();
 		
 		if (self::$_id >= \PHP_INT_MAX)
@@ -38,8 +52,33 @@ class Manager
 			stream_context_set_option($this->context,['magic'=>['id'=>$this->id]]);
 	
 	}
-    
-    
+	
+	
+    public function getDefaultDriver(){
+	    
+    }
+   /**
+     * Make a new driver instance.
+     *
+     * @param  string  $name
+     * @return mixed
+     *
+     * @throws \DeGraciaMathieu\Manager\Exceptions\DriverResolutionException
+     */
+    protected function makeDriverInstance(string $name)
+    {
+	self::init();    
+	    
+        $method = 'create' . ucfirst(strtolower($name)) . 'Driver';
+
+        if (! method_exists($this, $method)) {
+            throw new DriverResolutionException('Driver [' . $name . '] not supported.');
+        }
+
+        return $this->$method();
+    }
+	
+	
     public static function init(){		
 		if (!self::$started){
 			self::$started = true;			
@@ -333,6 +372,7 @@ class Manager
 	public function stream_open($path,$mode,$options,&$opened_path)
 		{
 		$path_info = parse_url($path);
+		$this->scheme = $path_info['scheme'];
 		if ($this->driver = self::driver_object($path_info['scheme'], $path_info['host'])){
 			return $this->driver->stream_open($path_info,$mode,$options,$opened_path,$this);
 		}
