@@ -137,8 +137,8 @@ class Manager
 			unset(self::$mounts[$scheme][strtolower($name)]);
 			return $driver->unmount();
 			}
-		return false; //TODO- throw exception
-		}
+		return false; //TODO- throw exception		
+	}
 
 	/**
 	 * Set or get a MagicMounter mode.
@@ -265,14 +265,22 @@ class Manager
 	public static function autoload($class)
 		{
 		$class = \strtolower($class);
+		
 		if (\strpos($class,\ltrim(__NAMESPACE__, '\\/').'\\driver\\',0) === 0){
-			$path = __DIR__.'/driver/'.\basename($class).'.php';
+			$path = __DIR__.\DIRECTORY_SEPARATOR.'driver'.\DIRECTORY_SEPARATOR.\basename($class).'.php';
 			if (!file_exists($path))
 				throw new Exception("Specified driver class '".$class."' does not exist.",1);
 			
-			require $path;
-			}
+			require $path;			
+		}elseif(\strpos($class,'\\MagicMounter\\driver\\',0) === 0){
+			$path = __DIR__.\DIRECTORY_SEPARATOR.'..'.\DIRECTORY_SEPARATOR.'src'.\DIRECTORY_SEPARATOR.'driver'.\DIRECTORY_SEPARATOR.\basename($class).'.php';
+			if (!file_exists($path))
+				throw new Exception("Specified driver class '".$class."' does not exist.",1);
+			
+			require $path;			
 		}
+		
+	}
 
 
 
