@@ -1,7 +1,7 @@
 <?php
 namespace frdl\mount;
 
-use Exception;
+
 
 class Manager
 {
@@ -48,7 +48,7 @@ class Manager
 			//stream_wrapper_register(self::$wrapper,self::class,\STREAM_IS_URL);	
 			self::alias(self::$wrapper,\STREAM_IS_URL);	
 			
-			\class_alias(self::class, MagicMounter\Magic::class);
+			\class_alias(self::class, \MagicMounter\Magic::class);
 		}
 		
     }
@@ -103,7 +103,7 @@ class Manager
 				
 				   try{
 					if(true!== ($validation=self::validateOptions($class, $options))   ){
-					   throw new \Exception((string)$validation);	
+					   throw new Exception((string)$validation);	
 					}
 				   }catch(\Exception $e){		
 					   throw new Exception("Could not mount '".$scheme.'://'.$name."': ".$e->getMessage(),102);		 
