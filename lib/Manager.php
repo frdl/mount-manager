@@ -124,10 +124,10 @@ class Manager
 	 * @param string $name
 	 * @return bool
 	 */
-	public static function unmount($name){
-		if ($driver = self::driver_object($name))
+	public static function unmount($scheme, $name){
+		if ($driver = self::driver_object($scheme, $name))
 			{
-			unset(self::$mounts[strtolower($name)]);
+			unset(self::$mounts[$scheme][strtolower($name)]);
 			return $driver->unmount();
 			}
 		return false; //TODO- throw exception
@@ -141,6 +141,7 @@ class Manager
 	 */
 	public static function mode($mode,$value = null)
 		{
+						
 		switch ($mode)
 			{
 			case 'url_stream':
@@ -149,18 +150,19 @@ class Manager
 					return $url_stream;
 				if ($url_stream == $value)
 					return true;
-				@stream_wrapper_unregister(self::$wrapper);
-				return stream_wrapper_register(self::$wrapper,'MagicMounter\\Magic',($value?STREAM_IS_URL:0));
-
+				//@stream_wrapper_unregister(self::$wrapper);
+				//return stream_wrapper_register(self::$wrapper,'MagicMounter\\Magic',($value?STREAM_IS_URL:0));
+                                  return self::alias(self::$wrapper,($value?STREAM_IS_URL:0));
 			case 'wrapper':
 				if ($value === null)		
 					return self::$wrapper;
 				if (!preg_match('/^[a-z0-9.]+$/',$value))
 					throw new Exception('Illegal wrapper name, only a-z, 0-9, and dots are allowed.',2);
 				$url_stream = !stream_is_local(self::$wrapper.'://');
-				@stream_wrapper_unregister(self::$wrapper);
+				//@stream_wrapper_unregister(self::$wrapper);
 				self::$wrapper = $value;
-				return stream_wrapper_register(self::$wrapper,'MagicMounter\\Magic',($url_stream?STREAM_IS_URL:0));
+				//return stream_wrapper_register(self::$wrapper,'MagicMounter\\Magic',($url_stream?STREAM_IS_URL:0));
+				 return self::alias(self::$wrapper,($url_stream?STREAM_IS_URL:0));
 			}
 		return false;
 		}
@@ -225,10 +227,12 @@ class Manager
 	 * @param int $flags 0 or STREAM_IS_URL. Default: STREAM_IS_URL
 	 * @return bool
 	 */
-	public static function alias($alias,$flags = null){
-		
-		if (in_array($alias, \stream_get_wrappers())) {  
+	public static function alias($alias,$flags = null,bool $Throw = false){
+				
+		if (true===$Throw && in_array($alias, \stream_get_wrappers())) {  
 			throw new Exception("Protocol '".$alias."' is registered already.",1);
+		}elseif (false===$Throw && in_array($alias, \stream_get_wrappers())) {  
+			stream_wrapper_unregister($alias);
 		} 
 		
 		
