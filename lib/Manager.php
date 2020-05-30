@@ -3,43 +3,50 @@ namespace frdl\mount;
 
 class Manager
 {
+	protected static $_id = 0;
 	protected static $wrapper = 'magic';
 	protected static $mounts = [
   
-  ];
+        ];
 
 	protected static $drivers = [
   
-  ];
+        ];
 
 	protected $driver;
 	public $id;
 	public $context;
+	
+	protected $scheme;
   
 
 	public function __construct()
 		{
-		static $id = 0;
-		if ($id >= PHP_INT_MAX)
-			$id = 0;
-		$this->id = $id++;
+		if (self::$_id >= \PHP_INT_MAX)
+			self::$_id = 0;
+		
+		$this->id = self::$_id++;
 		if (is_null($this->context))
-			$this->context = stream_context_create(['magic'=>['id'=>$id]]);
+			$this->context = stream_context_create(['magic'=>['id'=>$this->id]]);
 		else
-			stream_context_set_option($this->context,['magic'=>['id'=>$id]]);
+			stream_context_set_option($this->context,['magic'=>['id'=>$this->id]]);
 		}
     
     
     public static function init()
 		{
 		static $started = false;
-		if (!$started)
-			{
+		if (!$started){
 			$started = true;
-			spl_autoload_register('MagicMounter\\Magic::autoload');
-			stream_wrapper_register(self::$wrapper,'MagicMounter\\Magic',STREAM_IS_URL);
-			}
+			
+			
+			spl_autoload_register(self::class.'::autoload');			
+			//stream_wrapper_register(self::$wrapper,self::class,\STREAM_IS_URL);	
+			self::alias(self::$wrapper,\STREAM_IS_URL);
+			
 		}
+		
+    }
     
     
 	/**
@@ -63,25 +70,31 @@ class Manager
 	 * @param array $options Driver-specific options to pass.
 	 * @return bool
 	 */
-	public static function mount($name,$type,$options = [])
+	public static function mount($scheme, $name,$type,$options = [])
 		{
+				
+		  if (!in_array($scheme, \stream_get_wrappers())) {  
+			self::alias($scheme);
+		  } 
+		
+		
 		$name = strtolower($name);
-		if (isset(self::$mounts[$name]))
+		if (isset(self::$mounts[$scheme][$name]))
 			throw new Exception("Mount point '".$name."' already exists.",101);
 		if (!preg_match('/^[a-z0-9._-]+$/',$name))
 			throw new Exception("Invalid mount name '".$name."'.",104);
-		$class = isset(self::$drivers[$type]) ? self::$drivers[$type] : '\\MagicMounter\\driver\\'.$type;
+		$class = isset(self::$drivers[$type]) ? self::$drivers[$type] : __NAMESPACE__.'\\driver\\'.$type;
 		if (class_exists($class))
 			{
-			if (is_subclass_of($class,'\\MagicMounter\\Driver'))
+			if (is_subclass_of($class, __NAMESPACE__.'\\Driver'))
 				{
-				self::$mounts[$name] = new $class($options);
+				self::$mounts[$scheme][$name] = new $class($options);
 				// if (!self::$mounts[$name]->success())
 				// 	throw new Exception("Could not mount '".$name."'.",102);
 				return true;
 				}
 			}
-		throw new Exception("Could not mount '".$name."', the driver does not exist or is invalid.",102);
+		throw new Exception("Could not mount '".$scheme.'://'.$name."', the driver does not exist or is invalid.",102);
 		// return false;
 		}
 
@@ -90,7 +103,7 @@ class Manager
 	 * @param string $name
 	 * @return bool
 	 */
-	public static function mounted($name)
+	public static function mounted($scheme, $name)
 		{
 		return isset(self::$mounts[strtolower($name)]);
 		}
@@ -202,11 +215,17 @@ class Manager
 	 * @param int $flags 0 or STREAM_IS_URL. Default: STREAM_IS_URL
 	 * @return bool
 	 */
-	public static function alias($alias,$flags = null)
-		{
+	public static function alias($alias,$flags = null){
+		
+		if (in_array($alias, \stream_get_wrappers())) {  
+			throw new Exception("Protocol '".$alias."' is registered already.",1);
+		} 
+		
+		
 		if ($flags === null)
-			$flags = STREAM_IS_URL;
-		return stream_wrapper_register(self::$wrapper,'MagicMounter\\Magic',$flags);
+			$flags = \STREAM_IS_URL;
+		
+		   return stream_wrapper_register($alias, self::class,$flags);
 		}
 
 	/**
