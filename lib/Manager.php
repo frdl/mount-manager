@@ -55,11 +55,10 @@ class Manager
 	 * @param string $name
 	 * @return MagicMounter\Driver|false
 	 */
-	protected static function driver_object($name)
-		{
-		$name = strtolower($name);
-		return isset(self::$mounts[$name]) ? self::$mounts[$name] : false;
-		}
+	protected static function driver_object($scheme, $name){
+		$name = \strtolower($name);
+		return isset(self::$mounts[$scheme]) && isset(self::$mounts[$scheme][$name]) ? self::$mounts[$scheme][$name] : false;		
+	}
 
 
 
@@ -77,15 +76,22 @@ class Manager
 			self::alias($scheme);
 		  } 
 		
+		if(!isset(self::$mounts[$scheme])){			
+		   self::$mounts[$scheme] = [];	
+		}
 		
-		$name = strtolower($name);
+		
+		$name = \strtolower($name);
+		
 		if (isset(self::$mounts[$scheme][$name]))
-			throw new Exception("Mount point '".$name."' already exists.",101);
+			throw new Exception("Mount point '".$scheme.'://'.$name."' already exists.",101);
+		
 		if (!preg_match('/^[a-z0-9._-]+$/',$name))
-			throw new Exception("Invalid mount name '".$name."'.",104);
+			throw new Exception("Invalid mount name '[".$scheme.'://]'.$name."'.",104);
+		
 		$class = isset(self::$drivers[$type]) ? self::$drivers[$type] : __NAMESPACE__.'\\driver\\'.$type;
-		if (class_exists($class))
-			{
+		
+		if (class_exists($class)){
 			if (is_subclass_of($class, __NAMESPACE__.'\\Driver'))
 				{
 				self::$mounts[$scheme][$name] = new $class($options);
@@ -94,27 +100,27 @@ class Manager
 				return true;
 				}
 			}
+		
+	
 		throw new Exception("Could not mount '".$scheme.'://'.$name."', the driver does not exist or is invalid.",102);
-		// return false;
-		}
+		// return false;		
+	}
 
 	/**
 	 * Checks whether a magic mount exists.
 	 * @param string $name
 	 * @return bool
 	 */
-	public static function mounted($scheme, $name)
-		{
-		return isset(self::$mounts[strtolower($name)]);
-		}
+	public static function mounted($scheme, $name){
+		return isset(self::$mounts[$scheme]) && isset(self::$mounts[$scheme][\strtolower($name)]);		
+	}
 
 	/**
 	 * Unmounts a magic mount.
 	 * @param string $name
 	 * @return bool
 	 */
-	public static function unmount($name)
-		{
+	public static function unmount($name){
 		if ($driver = self::driver_object($name))
 			{
 			unset(self::$mounts[strtolower($name)]);
