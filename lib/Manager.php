@@ -9,7 +9,7 @@ class Manager extends AbstractManager
     /**
      * @var boolean
      */
-    protected $singleton = true;
+    protected $singleton = false;
 
     /**
      * @var \DeGraciaMathieu\Manager\Aggregator
@@ -32,7 +32,7 @@ class Manager extends AbstractManager
 	public $id;
 	public $context;
 	
-	protected $scheme;
+	protected $scheme = null;
   
 
 	public function __construct(){
@@ -46,6 +46,9 @@ class Manager extends AbstractManager
 		
 		$this->id = self::$_id++;
 		
+		if (is_null($this->scheme))
+			$this->scheme = self::$wrapper;
+			
 		if (is_null($this->context))
 			$this->context = stream_context_create(['magic'=>['id'=>$this->id]]);
 		else
@@ -53,6 +56,59 @@ class Manager extends AbstractManager
 	
 	}
 	
+    public function __call($method, $parameters)
+    {
+	if(\preg_match("/^create([A-Z][.*]+)Driver$/", $method, $matches)    ){
+	  $type = \strtolower($matches[1]);
+	  \array_unshift($parameters, $type);	
+	  return $this->makeDriver(...$parameters);
+	}
+	    
+        return $this->driver()->$method(...$parameters);
+    }
+	
+    protected function makeDriver($type){
+	$parameters = func_get_args();
+	array_shift($parameters);
+        $class = isset(self::$drivers[$type]) ? self::$drivers[$type] : __NAMESPACE__.'\\driver\\'.\ucfirst($type);    
+	$options = (count($parameters)) ? array_shift($parameters) : [];
+	$name = (count($parameters)) ? array_shift($parameters) : $type.'_disk_'.$this->id;
+	$scheme = (count($parameters)) ? array_shift($parameters) : $this->scheme;
+	
+	    
+	    
+	
+		
+		if ((!isset(self::$mounts[$scheme]) || !isset(self::$mounts[$scheme][$name]) )  && class_exists($class)){
+			if (is_subclass_of($class, __NAMESPACE__.'\\Driver'))
+				{
+				
+				   try{
+					if(true!== ($validation=self::validateOptions($class, $options))   ){
+					   throw new Exception((string)$validation);	
+					}
+				   }catch(\Exception $e){		
+					   throw new Exception("Could not mount '".$scheme.'://'.$name."': ".$e->getMessage(),102);		 
+					   return null;						   
+				   }
+				
+				
+						if(!isset(self::$mounts[$scheme])){			  
+							self::$mounts[$scheme] = [];			
+						}
+		
+				
+				 self::$mounts[$scheme][$name] = new $class($options);
+				// if (!self::$mounts[$name]->success())
+				// 	throw new Exception("Could not mount '".$name."'.",102);
+				//return true;
+				//  return self::driver_object($scheme, $name);
+				}
+			}
+	    
+	    
+	 return self::driver_object($scheme, $name);  
+    }
 	
     public function getDefaultDriver(){
 	    
@@ -71,9 +127,9 @@ class Manager extends AbstractManager
 	    
         $method = 'create' . ucfirst(strtolower($name)) . 'Driver';
 
-        if (! method_exists($this, $method)) {
-            throw new DriverResolutionException('Driver [' . $name . '] not supported.');
-        }
+      //  if (! method_exists($this, $method)) {
+      //      throw new DriverResolutionException('Driver [' . $name . '] not supported.');
+    //    }
 
         return $this->$method();
     }
