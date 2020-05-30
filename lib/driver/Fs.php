@@ -29,7 +29,7 @@ class Fs implements Driver
 			throw new Exception("Could not mount '".$this->directory."', the directory does not exist.",202);
 		}
 
-	public static function getOptions(){
+	public static function getOptions() :array{
 	  return [
 	      [	  
 	        'key' => 'directory', 		  
