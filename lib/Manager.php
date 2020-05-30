@@ -34,7 +34,17 @@ class Manager extends AbstractManager
 	
 	protected $scheme = null;
   
-
+        protected static $instance = null;
+	
+	public static function getInstance(){
+	   	if(null===self::$instance){
+		   self::$instance = new self;	
+		}
+		
+	   return self::$instance;	
+	}
+	
+	
 	public function __construct(){
 		
 		parent::__construct();
@@ -121,17 +131,17 @@ class Manager extends AbstractManager
      *
      * @throws \DeGraciaMathieu\Manager\Exceptions\DriverResolutionException
      */
-    protected function makeDriverInstance(string $name)
+    protected function makeDriverInstance(string $type)
     {
 	self::init();    
 	    
-        $method = 'create' . ucfirst(strtolower($name)) . 'Driver';
+        $method = 'create' . ucfirst(strtolower($type)) . 'Driver';
 
       //  if (! method_exists($this, $method)) {
       //      throw new DriverResolutionException('Driver [' . $name . '] not supported.');
     //    }
 
-        return $this->$method();
+        return $this->$method($type);
     }
 	
 	
@@ -190,6 +200,19 @@ class Manager extends AbstractManager
 		if (!preg_match('/^[a-z0-9._-]+$/',$name))
 			throw new Exception("Invalid mount name '[".$scheme.'://]'.$name."'.",104);
 		
+					
+		try{				
+			self::getInstance()			
+				->{'create'.\ucfirst($type).'Driver'}($options, $name, $scheme)		
+			;				 
+		}catch(\Exception $e){					
+			throw new Exception("Could not mount '".$scheme.'://'.$name."': ".$e->getMessage(),102);			
+			return false;					
+		}	
+		
+		return self::mounted($scheme, $name);
+		
+		/*
 		$class = isset(self::$drivers[$type]) ? self::$drivers[$type] : __NAMESPACE__.'\\driver\\'.\ucfirst($type);
 		
 		if (class_exists($class)){
@@ -220,7 +243,8 @@ class Manager extends AbstractManager
 		
 	
 		throw new Exception("Could not mount '".$scheme.'://'.$name."', the driver does not exist or is invalid.",102);
-		 return false;		
+		 return false;	
+		 */
 	}
 
 	public static function validateOptions($class, array &$options){
