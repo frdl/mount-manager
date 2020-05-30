@@ -7,6 +7,7 @@ class Manager
 {
 	protected static $_id = 0;
 	protected static $wrapper = 'magic';
+	protected static $started = false;
 	protected static $mounts = [
   
         ];
@@ -22,30 +23,30 @@ class Manager
 	protected $scheme;
   
 
-	public function __construct()
-		{
+	public function __construct(){
+		
+		self::init();
+		
 		if (self::$_id >= \PHP_INT_MAX)
 			self::$_id = 0;
 		
 		$this->id = self::$_id++;
+		
 		if (is_null($this->context))
 			$this->context = stream_context_create(['magic'=>['id'=>$this->id]]);
 		else
 			stream_context_set_option($this->context,['magic'=>['id'=>$this->id]]);
-		}
+	
+	}
     
     
-    public static function init()
-		{
-		static $started = false;
-		if (!$started){
-			$started = true;
-			
+    public static function init(){		
+		if (!self::$started){
+			self::$started = true;			
 			
 			spl_autoload_register(self::class.'::autoload');			
 			//stream_wrapper_register(self::$wrapper,self::class,\STREAM_IS_URL);	
-			self::alias(self::$wrapper,\STREAM_IS_URL);
-			
+			self::alias(self::$wrapper,\STREAM_IS_URL);			
 		}
 		
     }
@@ -73,7 +74,7 @@ class Manager
 	 */
 	public static function mount($scheme, $name,$type,$options = [])
 		{
-		
+		self::init();
 			
 		$name = \strtolower($name);
 		
@@ -143,9 +144,9 @@ class Manager
 	 * @param mixed $value
 	 * @return mixed
 	 */
-	public static function mode($mode,$value = null)
-		{
-						
+	public static function mode($mode,$value = null){
+		self::init();
+		
 		switch ($mode)
 			{
 			case 'url_stream':
@@ -179,8 +180,10 @@ class Manager
 	 * @param string|null $driver The fully-qualified class name or null to reset to default.
 	 * @return string|void
 	 */
-	public static function driver($type,$driver = null)
-		{
+	public static function driver($type,$driver = null){
+		self::init();
+		
+		
 		if (\func_num_args() === 1)
 			{
 			$class = isset(self::$drivers[$type]) ? self::$drivers[$type] : __NAMESPACE__.'\\driver\\'.$type;
@@ -188,11 +191,13 @@ class Manager
 			}
 		if (!is_subclass_of($driver,__NAMESPACE__.'\\Driver'))
 			throw new Exception("Driver '".$name."', should implement interface \\frdl\\mount\\Driver.",4);
+		
 		if (self::$drivers[$type] === null)
 			unset(self::$drivers[$type]);
 		else
 			self::$drivers[$type] = $driver;
-		}
+		
+	}
 
 	/**
 	 * Call a driver-specific method on a magic driver or magic stream. Parameters are dynamic.
@@ -200,6 +205,7 @@ class Manager
 	 * @return mixed
 	 */
 	public static function quote($scheme, $magic_stream/*, ...*/){
+		self::init();
 		$parameters = \func_get_args();
 		array_shift($parameters);
 		array_shift($parameters);
