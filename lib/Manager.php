@@ -46,7 +46,9 @@ class Manager
 			
 			spl_autoload_register(self::class.'::autoload');			
 			//stream_wrapper_register(self::$wrapper,self::class,\STREAM_IS_URL);	
-			self::alias(self::$wrapper,\STREAM_IS_URL);			
+			self::alias(self::$wrapper,\STREAM_IS_URL);	
+			
+			\class_alias(self::class, MagicMounter\Magic::class);
 		}
 		
     }
