@@ -95,7 +95,7 @@ class Manager
 		if (!preg_match('/^[a-z0-9._-]+$/',$name))
 			throw new Exception("Invalid mount name '[".$scheme.'://]'.$name."'.",104);
 		
-		$class = isset(self::$drivers[$type]) ? self::$drivers[$type] : __NAMESPACE__.'\\driver\\'.$type;
+		$class = isset(self::$drivers[$type]) ? self::$drivers[$type] : __NAMESPACE__.'\\driver\\'.\ucfirst($type);
 		
 		if (class_exists($class)){
 			if (is_subclass_of($class, __NAMESPACE__.'\\Driver'))
@@ -188,7 +188,7 @@ class Manager
 		
 		if (\func_num_args() === 1)
 			{
-			$class = isset(self::$drivers[$type]) ? self::$drivers[$type] : __NAMESPACE__.'\\driver\\'.$type;
+			$class = isset(self::$drivers[$type]) ? self::$drivers[$type] : __NAMESPACE__.'\\driver\\'.\ucfirst($type);
 			return class_exists($class) ? $class : null;
 			}
 		if (!is_subclass_of($driver,__NAMESPACE__.'\\Driver'))
