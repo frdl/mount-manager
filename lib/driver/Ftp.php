@@ -79,6 +79,15 @@ class Ftp implements Driver
 		},
 		'hint' => 'The Ftp-Accounts port.';     
 	      ],
+	      [	  
+	        'key' => 'directory', 		  
+		'required' => false,      
+		'default' => '',      
+		'type' => function(string $i){
+		     return \is_string($i);
+		},
+		'hint' => 'The Mounts directory within the Ftp-Account.';     
+	      ],
 	  ];
 	}
 	
