@@ -71,8 +71,15 @@ class Manager
 	 */
 	public static function mount($scheme, $name,$type,$options = [])
 		{
-				
-		  if (!in_array($scheme, \stream_get_wrappers())) {  
+		
+			
+		$name = \strtolower($name);
+		
+		if (isset(self::$mounts[$scheme]) && isset(self::$mounts[$scheme][$name]))
+			throw new Exception("Mount point '".$scheme.'://'.$name."' already exists.",101);
+		
+		
+		  if(!in_array($scheme, \stream_get_wrappers())) {  
 			self::alias($scheme);
 		  } 
 		
@@ -81,10 +88,7 @@ class Manager
 		}
 		
 		
-		$name = \strtolower($name);
-		
-		if (isset(self::$mounts[$scheme][$name]))
-			throw new Exception("Mount point '".$scheme.'://'.$name."' already exists.",101);
+
 		
 		if (!preg_match('/^[a-z0-9._-]+$/',$name))
 			throw new Exception("Invalid mount name '[".$scheme.'://]'.$name."'.",104);
