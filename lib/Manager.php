@@ -61,7 +61,7 @@ class Manager extends AbstractManager
 		
 		$this->id = self::$_id++;
 		
-		$this->mountName = $scheme.'_disk_'.$this->id;
+
 		
 		
 		if (!is_null($scheme))
@@ -79,11 +79,36 @@ class Manager extends AbstractManager
 			stream_context_set_option($this->context,['magic'=>['id'=>$this->id]]);
 		
 			
+		if(is_null($this->mountName)){
+			$this->mountName = $this->getDefaultDriver().'_disk_'.$this->id;
+		}		
+		
+		
 		if (!is_null($this->scheme) && !is_null($this->mountName)){		
 			$this->driver = self::driver_object($this->scheme, $this->mountName);	
 		}
 	
 	}
+	
+	
+    /**
+     * Get a driver instance.
+     *
+     * @param  string  $name
+     * @return mixed
+     *
+     * @throws \DeGraciaMathieu\Manager\Exceptions\DriverOverwrittenException
+     * @throws \DeGraciaMathieu\Manager\Exceptions\DriverResolutionException
+     */
+    public function driver($name = null)
+    {
+        $name = $name ?: $this->getDefaultDriver();
+
+        $driver = $this->load($name);
+
+        return $driver;
+    }		
+	
 	
     public function __get($name)
     {
@@ -374,23 +399,7 @@ class Manager extends AbstractManager
 
 	
 	
-    /**
-     * Get a driver instance.
-     *
-     * @param  string  $name
-     * @return mixed
-     *
-     * @throws \DeGraciaMathieu\Manager\Exceptions\DriverOverwrittenException
-     * @throws \DeGraciaMathieu\Manager\Exceptions\DriverResolutionException
-     */
-    public function driver($name = null)
-    {
-        $name = $name ?: $this->getDefaultDriver();
 
-        $driver = $this->load($name);
-
-        return $driver;
-    }	
 	
 	/**
 	 * Sets or gets a driver class name for a specific magic mount type. Call with one argument to
