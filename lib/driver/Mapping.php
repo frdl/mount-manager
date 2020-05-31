@@ -74,6 +74,7 @@ class Mapping extends Delegate
 
                                                     StreamManager::create()->registerStream($stream);
 						   foreach($value as $host => $location){    
+						    if(true !== Manager::mounted('frdl+'.$stream->getProtocol(), $host) ){	   
 						      Manager::mount('frdl+'.$stream->getProtocol(),
 								     $host,
 								     'transactional',								   
@@ -87,6 +88,7 @@ class Mapping extends Delegate
 								     
 								      ]								  
 								   );
+						    }
 						   }
 					       }
 		   );	
