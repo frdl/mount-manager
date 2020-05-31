@@ -6,10 +6,17 @@ use frdl\mount\Manager;
 use frdl\mount\Exception;
 use frdl\mount\Driver;
 
+use frdl\ContextContainer;
+
 class DevNull implements Driver
 {
-	public function __construct(array $options){
-  
+   protected $options;	
+	
+   public function __construct($options){
+  	$this->options=(!is_object($options) || true!==$options instanceof ContextContainer)
+			? ContextContainer::create($options, '${', '}')
+			: $options	
+			;
   }
   
 	public static function getOptions() :array{
