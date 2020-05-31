@@ -73,6 +73,13 @@ class Mapping extends Delegate
 								       );
 
                                                     StreamManager::create()->registerStream($stream);
+						   foreach($value as $host => $location){    
+						      Manager::mount($protocol, $host,'mapping',
+								     ['target'=>$stream,
+								     'mappings'=>[
+								         $host => $location
+								     ]]);
+						   }
 					       }
 		   );	
 		}
