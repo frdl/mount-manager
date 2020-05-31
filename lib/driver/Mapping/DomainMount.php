@@ -8,12 +8,12 @@ use steevanb\PhpTypedArray\{
     ObjectArray\CodePointStringArray
 };
 
-
+use Symfony\Component\String\CodePointString;
 
 final class DomainMount extends CodePointStringArray
 {
 	   
-    public function __construct(string $host, string $location)
+    public function __construct(string $host = '', string $location = '')
     {
         parent::__construct([$host, $location], CodePointString::class);
 	if(2!==$this->count()){
@@ -26,6 +26,14 @@ final class DomainMount extends CodePointStringArray
         return [$this->values[0] => $this->values[1]];
     }
    	
+    public function __get($name)
+    {
+        if($name === 'host' || 'key' === $name){
+		return $this->values[0];
+	}elseif($name === 'location' || 'value' === $name){
+		return $this->values[1];
+	}
+    }
 	
 }
 
