@@ -2,17 +2,14 @@
 namespace frdl\mount\driver\Mapping;
 
 use frdl\mount\driver\Mapping\DomainMount;
+use steevanb\PhpTypedArray\ObjectArray\ObjectArray;
 
-final class DNS implements \Iterator extends \IteratorIterator
+
+final class DNS extends ObjectArray
 {
 	   
-   public function __construct(DomainMount... $entries){
-	    parent::__construct(new \ArrayIterator($entries));
+   public function __construct($entries){
+       parent::__construct($entries, DomainMount::class);
    }
-	
-  public function current() : DomainMount
-  {
-    return parent::current();
-  }
   
 }
