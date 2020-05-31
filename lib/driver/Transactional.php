@@ -82,10 +82,10 @@ public static function getOptions() :array{
      
   	  
       [	  
-	  'key' => 'stage', 		  
+	  'key' => 'directory', 		  
 		'required' => false,  
                 'default' => null,
-		'type' => function($i){
+		'type' => function(string $i = null){
 		
 		    return true;	
 		},
