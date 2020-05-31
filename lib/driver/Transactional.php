@@ -53,7 +53,7 @@ class Transactional extends Driver
         $this->fileEntity = null;
                
          $this->options=array_merge([
-                        'scheme' => 'web+workspace+transaction',
+                        'scheme' => 'frdl',
                         'directory' => null,
                     ], $opts);        
                
