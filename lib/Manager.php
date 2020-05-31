@@ -5,6 +5,8 @@ use frdl\mount\Driver;
 use DeGraciaMathieu\Manager\Manager as AbstractManager;
 use Nijens\ProtocolStream\StreamManager;
 use frdl\mount\driver\Mapping;
+use frdl\mount\Repository;
+
 
 class Manager extends AbstractManager
 {
@@ -47,7 +49,7 @@ class Manager extends AbstractManager
 		}		
 		
 	  if (!is_null($scheme) && !is_null($mount)){
-		self::$instance->driver = self::driver_object($scheme, $mount);
+		self::$instance->driver = new Repository(self::driver_object($scheme, $mount));
 	  }
 		
 	   return self::$instance;	
@@ -150,7 +152,7 @@ class Manager extends AbstractManager
 		
 		
 		if (!is_null($this->scheme) && !is_null($this->mountName)){		
-			$this->driver = self::driver_object($this->scheme, $this->mountName);	
+			$this->driver = new Repository(self::driver_object($this->scheme, $this->mountName));	
 		}
 	
 	}
@@ -171,7 +173,7 @@ class Manager extends AbstractManager
 
         $driver = $this->load($type);
 
-        return $driver;
+        return new Repository($driver, $type);
     }		
 	
 	
@@ -254,7 +256,7 @@ class Manager extends AbstractManager
 						}
 		
 				
-				 self::$mounts[$scheme][$name] = new $class($options);
+				 self::$mounts[$scheme][$name] = new Repository(new $class($options), $type);
 				// if (!self::$mounts[$name]->success())
 				// 	throw new Exception("Could not mount '".$name."'.",102);
 				//return true;
@@ -300,10 +302,13 @@ class Manager extends AbstractManager
 	*/
     public function createMappingDriver(array $opts = [], string $mountName = 'network', string $scheme = 'frdlweb'){
 	    $options = array_merge([
-	    
+	       'target' => $mountName.':'.$scheme.'://${self.host}/${path}';
 	    ],$opts);
 	    
-	    $this->makeDriver($type)
+	   $driver = $this->makeDriver('mapping', $options, $mountName, $scheme);
+	   $driver->singleton(false);	
+	   
+	return $driver;
     }
 	
     public static function init(){	
