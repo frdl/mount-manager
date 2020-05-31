@@ -18,6 +18,8 @@ class Mapping extends Fs
   protected $singleton = true;
   protected $options = [];
   protected static $StreamManager = null;
+  protected $initiated = false;	
+	
 	
   protected $namespace = '';	
  
@@ -33,6 +35,16 @@ class Mapping extends Fs
 	   $this->namespace = $this->options['namespace'];
 	}
 
+	
+	public function init(){
+		if(true===$this->initiated){
+		  return;	
+		}
+		$this->initiated=true;
+		
+		
+	}
+	
 	public static function getOptions() :array{
 	  return [
     
