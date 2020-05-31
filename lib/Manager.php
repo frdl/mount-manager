@@ -100,11 +100,11 @@ class Manager extends AbstractManager
      * @throws \DeGraciaMathieu\Manager\Exceptions\DriverOverwrittenException
      * @throws \DeGraciaMathieu\Manager\Exceptions\DriverResolutionException
      */
-    public function driver($name = null)
+    public function iDriver($type = null)
     {
-        $name = $name ?: $this->getDefaultDriver();
+        $type = $type ?: $this->getDefaultDriver();
 
-        $driver = $this->load($name);
+        $driver = $this->load($type);
 
         return $driver;
     }		
@@ -128,9 +128,24 @@ class Manager extends AbstractManager
 	}
     }
 	
+    public function __callStatic($method, $parameters)
+    {
+	if('driver'===$method){
+	    return self::registerDriver(...$parameters);
+	}elseif(\preg_match("/^create([A-Z][.*]+)Driver$/", $method, $matches)    ){
+	  $type = \strtolower($matches[1]);
+	  \array_unshift($parameters, $type);	
+	  return self::getInstance()->makeDriver(...$parameters);
+	}
+	    
+        return self::getInstance()->driver()->$method(...$parameters);
+    }
+	
     public function __call($method, $parameters)
     {
-	if(\preg_match("/^create([A-Z][.*]+)Driver$/", $method, $matches)    ){
+	if('driver'===$method){
+	    return $this->iDriver(...$parameters);
+	}elseif(\preg_match("/^create([A-Z][.*]+)Driver$/", $method, $matches)    ){
 	  $type = \strtolower($matches[1]);
 	  \array_unshift($parameters, $type);	
 	  return $this->makeDriver(...$parameters);
