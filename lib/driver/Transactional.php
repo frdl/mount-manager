@@ -86,8 +86,7 @@ public static function getOptions() :array{
 		'required' => false,  
                 'default' => null,
 		'type' => function(string $i = null){
-		
-		    return true;	
+                     return \is_null($i) || (\is_string($i) && \is_dir($i)  );	
 		},
 		'hint' => 'Mounted stage.';     
 	      ],  
