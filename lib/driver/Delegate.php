@@ -29,7 +29,10 @@ class Delegate implements Driver
  
  }
 
-
+public function getTargetStreamWrapper($method, $arguments) :\stdclass{
+     $magic_stream = array_pop($arguments);	
+	
+}
 	
 	public static function getOptions() :array{
 	  return [
@@ -70,11 +73,11 @@ class Delegate implements Driver
    *   or FALSE if the method does not exist.
    */
   protected function delegate($method, $arguments) {
-    $method = 'parent::' . $method;
-    if (is_callable($method)) {
-      return call_user_func_array($method, $arguments);
-    } else {
-      return FALSE;
+      $Handler = [$this->getTargetStreamWrapper($method, $arguments), $method];
+    if(is_callable($Handler)) {
+       return call_user_func_array($Handler, $arguments);
+    }else{
+      return false;
     }
   }
 
