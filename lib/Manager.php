@@ -36,6 +36,7 @@ class Manager extends AbstractManager
         
 	protected $mountName;
         protected static $instance = null;
+	protected static $StreamManager = null;
 	
 	public static function getInstance($scheme=null, $mount=null){
 	   	if(null===self::$instance){
@@ -48,11 +49,26 @@ class Manager extends AbstractManager
 		
 	   return self::$instance;	
 	}
+	   
 	
-	public function getMountsByStage(string $stage=null){
+   public function getMountsByPath(string $path)
+    {
+		$path_info = \parse_url($path);
+		$scheme = $path_info['scheme'];
+		$mountName = $path_info['host'];
+
+      
+    }
+	
+	
+	public function getMountsByStage(string $stage=null, string $protocol=null){
 	    $stages = [];
 		
 	    foerach(self::$mounts as $scheme => $mount){
+		 if(!is_null($protocol) && $protocol !== $scheme){
+		   conbtinue;	 
+		 }
+		    
 		foreach($mount as $name => $streams){
 		    // self::driver_object($scheme, $name)	
 		    !isset($stages[$name]) && $stages[$name] = [];
@@ -250,7 +266,13 @@ class Manager extends AbstractManager
     }
 	
 	
-    public static function init(){		
+    public static function init(){	
+	    	  
+	    if(null === self::$StreamManager){	
+	        self::$StreamManager = StreamManager::create();		
+	    }
+	    
+	    
 		if (!self::$started){
 			self::$started = true;			
 			
