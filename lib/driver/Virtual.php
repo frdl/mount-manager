@@ -21,8 +21,17 @@ class Virtual extends Delegate
     protected static $StreamManager = null;
     protected static $MountManager = null;
 	
+	
   public function __construct($options){     
-	    parent::__construct($options);
+    parent::__construct($options);
+	    
+    vfsStream::setup(
+         '~',
+         755,
+        $this->options['fs.virtual.structure']
+    );
+	  
+	  
  }
 
 public function getTargetStreamWrapper($method, $arguments) :\stdclass{
