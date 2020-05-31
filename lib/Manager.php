@@ -223,7 +223,7 @@ class Manager extends AbstractManager
         return $this->driver()->$method(...$parameters);
     }
 	
-    public function makeDriver($type){
+    protected function makeDriver($type){
 	$parameters = func_get_args();
 	array_shift($parameters);
         $class = isset(self::$drivers[$type]) ? self::$drivers[$type] : __NAMESPACE__.'\\driver\\'.\ucfirst($type);    
@@ -289,7 +289,22 @@ class Manager extends AbstractManager
 
         return $this->$method($type);
     }
-	
+	/*
+	   public function makeDriver($type){
+	$parameters = func_get_args();
+	array_shift($parameters);
+        $class = isset(self::$drivers[$type]) ? self::$drivers[$type] : __NAMESPACE__.'\\driver\\'.\ucfirst($type);    
+	$options = (count($parameters)) ? array_shift($parameters) : [];
+	$name = (count($parameters)) ? array_shift($parameters) : $this->mountName;
+	$scheme = (count($parameters)) ? array_shift($parameters) : $this->scheme;
+	*/
+    public function createMappingDriver(array $opts = [], string $mountName = 'network', string $scheme = 'frdlweb'){
+	    $options = array_merge([
+	    
+	    ],$opts);
+	    
+	    $this->makeDriver($type)
+    }
 	
     public static function init(){	
 	    	  
@@ -466,7 +481,7 @@ class Manager extends AbstractManager
 	 * @param string|null $driver The fully-qualified class name or null to reset to default.
 	 * @return string|void
 	 */
-	public static function registerDriver($type,Driver $driver = null){
+	public static function registry($type,$driver = null){
 		self::init();
 		
 		
