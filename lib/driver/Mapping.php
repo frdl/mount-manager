@@ -10,7 +10,7 @@ use frdl\mount\driver\Fs;
 
 use Nijens\ProtocolStream\StreamManager;
 
-
+use frdl\ContextContainer;
 
 class Mapping extends Fs
 {
@@ -23,11 +23,14 @@ class Mapping extends Fs
 	
   protected $namespace = '';	
  
-	public function __construct(array $options){     
+	public function __construct($options){     
 	    if(null === self::$StreamManager){	
 	        self::$StreamManager = StreamManager::create();		
 	    }
-		$this->options=$options;
+		$this->options=(!is_object($options) || true!==$options instanceof ContextContainer)
+			? ContextContainer::create($options, '${', '}')
+			: $options	
+			;
 		
 		
 		$this->options['mappings'] = array_merge($this->options['mappings'], $this->options['protocol-domain-mappings'] );
@@ -51,7 +54,7 @@ class Mapping extends Fs
   	      [	  
 	        'key' => 'namespace', 		  
 		'required' => false,  
-                'default' => 'web+fan+alias-mapping',
+                'default' => 'web+fan:web+config:web+mapping-stages',
 		'type' => function(string $i){
 		      return \is_string($i);
 		},
