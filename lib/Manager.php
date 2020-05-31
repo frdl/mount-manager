@@ -291,23 +291,20 @@ class Manager extends AbstractManager
 
         return $this->$method($type);
     }
-	/*
-	   public function makeDriver($type){
-	$parameters = func_get_args();
-	array_shift($parameters);
-        $class = isset(self::$drivers[$type]) ? self::$drivers[$type] : __NAMESPACE__.'\\driver\\'.\ucfirst($type);    
-	$options = (count($parameters)) ? array_shift($parameters) : [];
-	$name = (count($parameters)) ? array_shift($parameters) : $this->mountName;
-	$scheme = (count($parameters)) ? array_shift($parameters) : $this->scheme;
-	*/
-    public function createMappingDriver(array $opts = [], string $mountName = 'network', string $scheme = 'frdlweb'){
+
+    public function createMappingDriver(array $opts = [], string $mountName = 'network', string $scheme = 'mapping'){
 	    $options = array_merge([
-	       'target' => $mountName.':'.$scheme.'://${self.host}/${path}';
+	       'target' => $mountName.':'.$scheme.'://${self.host}/${path}',
+	       'mappings' => [
+		       
+		       
+	       ],
 	    ],$opts);
 	    
 	   $driver = $this->makeDriver('mapping', $options, $mountName, $scheme);
 	   $driver->singleton(false);	
-	   
+	   $driver->registry('mapping', get_class($driver));
+	    
 	return $driver;
     }
 	
