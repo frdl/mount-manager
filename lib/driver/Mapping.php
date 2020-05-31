@@ -8,19 +8,10 @@ use frdl\mount\Driver;
 use frdl\mount\driver\DevNull;
 
 use Nijens\ProtocolStream\StreamManager;
-/**
- * MagicMounter, by Marvin Janssen (http://marvinjanssen.me), released in 2017.
- * 
- * This is a local filesystem magic driver, it is mainly meant as an example even though it can
- * be used to simulate symbolic links.
- */
-class StreamMapping
-{
-   public function __construct(string $protocol, bool $writable, array $hostLocationMapping){
-	   
-   }
-	
-}
+
+
+
+
 
 
 
