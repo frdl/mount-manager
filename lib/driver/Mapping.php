@@ -6,27 +6,31 @@ use frdl\mount\Manager;
 use frdl\mount\Exception;
 use frdl\mount\Driver;
 use frdl\mount\driver\DevNull;
+use frdl\mount\driver\Fs;
 
 use Nijens\ProtocolStream\StreamManager;
 
 
 
-
-
-
-
-class Mapping extends DevNull
+class Mapping extends Fs
 {
 
   protected $singleton = true;
+  protected $options = [];
   protected static $StreamManager = null;
+	
+  protected $namespace = '';	
  
 	public function __construct(array $options){     
 	    if(null === self::$StreamManager){	
 	        self::$StreamManager = StreamManager::create();		
 	    }
+		$this->options=$options;
 		
-		$options['mappings'] = array_merge($options['mappings'], $options['protocol-domain-mappings'] );	
+		
+		$this->options['mappings'] = array_merge($this->options['mappings'], $this->options['protocol-domain-mappings'] );
+		
+	   $this->namespace = $this->options['namespace'];
 	}
 
 	public static function getOptions() :array{
