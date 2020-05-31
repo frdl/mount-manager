@@ -7,12 +7,17 @@ use frdl\mount\Exception;
 use frdl\mount\Driver;
 use frdl\mount\driver\DevNull;
 use frdl\mount\driver\Fs;
+use frdl\mount\driver\Delegate;
+
+use frdl\mount\driver\Mapping\DomainMount;
+use frdl\mount\driver\Mapping\DNS;
+use frdl\mount\driver\Mapping\StreamMapping;
 
 use Nijens\ProtocolStream\StreamManager;
 
 use frdl\ContextContainer;
 
-class Mapping extends Fs
+class Mapping extends Delegate
 {
 
   protected $singleton = true;
@@ -21,7 +26,9 @@ class Mapping extends Fs
   protected $initiated = false;	
 	
 	
-  protected $namespace = '';	
+//  protected $namespace = '';	
+ 
+	
  
 	public function __construct($options){     
 	    if(null === self::$StreamManager){	
@@ -33,9 +40,9 @@ class Mapping extends Fs
 			;
 		
 		
-		$this->options['mappings'] = array_merge($this->options['mappings'], $this->options['protocol-domain-mappings'] );
+		$this->options['mappings']->add($this->options['protocol-domain-mappings']);
 		
-	   $this->namespace = $this->options['namespace'];
+	  // $this->namespace = $this->options['namespace'];
 	}
 
 	
@@ -45,12 +52,34 @@ class Mapping extends Fs
 		}
 		$this->initiated=true;
 		
+		$mappings = [];
+		foreach($this->options['mappings'] as $scheme => $map){	
+		    	$mountDNS=[];
+			foreach($map['DNS'] as $domain => $path){			
+				$mountDNS[]=new DomainMount($domain, $path);		
+			}
+			
+		  $DNS = new DNS($mountDNS);
+		  $mappings[]= new StreamMapping($scheme,
+					        $map['writable'], 
+						$DNS, 
+					       function(){
+						       
+					       }
+		   );	
+		}
 		
 	}
-	
+	/*
+	new StreamMapping(string $protocol, bool $writable, DNS $mountDNS, callable $callback = null)
+
+new DNS(DomainMount... $entries) 
+
+new DomainMount(string $host = '', string $location = '') 
+*/
 	public static function getOptions() :array{
 	  return [
-    
+    /*
   	      [	  
 	        'key' => 'namespace', 		  
 		'required' => false,  
@@ -60,7 +89,7 @@ class Mapping extends Fs
 		},
 		'hint' => 'Namespace/Protocol(-transport) Scheme-Prefix.';     
 	      ],  
-    
+    */
     
 	      [	  
 	        'key' => 'protocol-domain-mappings', 		  
