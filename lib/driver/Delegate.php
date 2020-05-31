@@ -33,7 +33,17 @@ class Delegate implements Driver
 
 public function getTargetStreamWrapper($method, $arguments) :\stdclass{
      $magic_stream = array_pop($arguments);	
+					
+	                         try{
+					if(true!== ($validation=Manager::validateOptions(get_class($this), $this->options))   ){
+					   throw new Exception((string)$validation);	
+					}
+				   }catch(\Exception $e){		
+					   throw new Exception("Could not getTargetStreamWrapper for method '".get_class($this).'::'.$method."': ".$e->getMessage(),102);		 
+					   return null;						   
+				   }
 	
+	return $this->options['target'];
 }
 	
 	public static function getOptions() :array{
