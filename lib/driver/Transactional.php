@@ -42,6 +42,95 @@ class Transactional
         $this->fileEntity = null;
     }
 
+           
+   /**
+     * Register stream wrapper.
+     */
+    public static function register(string $protocol, string $root = null, int $flags = 0): bool
+    {
+        $wrappers = stream_get_wrappers();
+        if (in_array($protocol, $wrappers)) {
+            throw new Exception(
+                "Protocol '$protocol' has been already registered"
+            );
+        }
+        $wrapper = stream_wrapper_register($protocol, get_called_class(), $flags);
+
+        if ($wrapper) {
+            if (null !== $root) {
+                $content = Entity::newInstance($root);
+            } else {
+                $content = null;
+            }
+
+            $partition = new Partition($content);
+
+            self::$partitions[$protocol] = $partition;
+        }
+
+        return $wrapper;
+    }
+
+    /**
+     * Commit all changes to real FS.
+     */
+    public static function commit(string $protocol): bool
+    {
+        if (isset(self::$partitions[$protocol])) {
+            self::$partitions[$protocol]->commit();
+
+            $result = true;
+        } else {
+            $result = false;
+        }
+
+        return $result;
+    }
+
+    /**
+     * Unregister stream wrapper.
+     */
+    public static function unregister(string $protocol): bool
+    {
+        unset(self::$partitions[$protocol]);
+
+        $wrappers = stream_get_wrappers();
+        if (!in_array($protocol, $wrappers)) {
+            throw new Exception(
+                "Protocol '$protocol' has not been registered yet"
+            );
+        }
+
+        return stream_wrapper_unregister($protocol);
+    }
+
+    /**
+     * Get relative path of an url.
+     */
+    public static function getRelativePath(string $url): string
+    {
+        $urlParts = explode('://', $url);
+        array_shift($urlParts);
+        $urlPath = implode('://', $urlParts);
+
+        return Entity::fixPath($urlPath);
+    }
+
+    /**
+     * Get partition by file url.
+     */
+    protected static function getPartition(string $url): ?Partition
+    {
+        $urlParts = explode('://', $url);
+        $protocol = array_shift($urlParts);
+
+        return self::$partitions[$protocol] ?? null;
+    }
+           
+           
+           
+           
+           
     /**
      * Retrieve information about a file.
      *
@@ -303,87 +392,5 @@ class Transactional
         return $result;
     }
 
-    /**
-     * Register stream wrapper.
-     */
-    public static function register(string $protocol, string $root = null, int $flags = 0): bool
-    {
-        $wrappers = stream_get_wrappers();
-        if (in_array($protocol, $wrappers)) {
-            throw new Exception(
-                "Protocol '$protocol' has been already registered"
-            );
-        }
-        $wrapper = stream_wrapper_register($protocol, get_called_class(), $flags);
-
-        if ($wrapper) {
-            if (null !== $root) {
-                $content = Entity::newInstance($root);
-            } else {
-                $content = null;
-            }
-
-            $partition = new Partition($content);
-
-            self::$partitions[$protocol] = $partition;
-        }
-
-        return $wrapper;
-    }
-
-    /**
-     * Commit all changes to real FS.
-     */
-    public static function commit(string $protocol): bool
-    {
-        if (isset(self::$partitions[$protocol])) {
-            self::$partitions[$protocol]->commit();
-
-            $result = true;
-        } else {
-            $result = false;
-        }
-
-        return $result;
-    }
-
-    /**
-     * Unregister stream wrapper.
-     */
-    public static function unregister(string $protocol): bool
-    {
-        unset(self::$partitions[$protocol]);
-
-        $wrappers = stream_get_wrappers();
-        if (!in_array($protocol, $wrappers)) {
-            throw new Exception(
-                "Protocol '$protocol' has not been registered yet"
-            );
-        }
-
-        return stream_wrapper_unregister($protocol);
-    }
-
-    /**
-     * Get relative path of an url.
-     */
-    public static function getRelativePath(string $url): string
-    {
-        $urlParts = explode('://', $url);
-        array_shift($urlParts);
-        $urlPath = implode('://', $urlParts);
-
-        return Entity::fixPath($urlPath);
-    }
-
-    /**
-     * Get partition by file url.
-     */
-    private static function getPartition(string $url): ?Partition
-    {
-        $urlParts = explode('://', $url);
-        $protocol = array_shift($urlParts);
-
-        return self::$partitions[$protocol] ?? null;
-    }
+ 
 }
