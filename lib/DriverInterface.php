@@ -3,7 +3,7 @@ namespace frdl\mount;
 
 use frdl\mount\Manager;
 
-interface Driver
+interface DriverInterface
 	{
 	public function __construct(array $options);
 	public static function getOptions() :array;
@@ -37,4 +37,4 @@ interface Driver
 	public function dir_closedir(Manager $magic_stream);
 	public function dir_readdir(Manager $magic_stream);
 	public function dir_rewinddir(Manager $magic_stream);
-	}
+}
