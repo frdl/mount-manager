@@ -73,13 +73,13 @@ class Manager extends AbstractManager
 	  if($ProtocolDomainsMappingStream && $ProtocolDomainsMappingStream instanceof \Nijens\ProtocolStream\Stream\StreamInterface){
 		$pathMappings = $ProtocolDomainsMappingStream->getPaths();  
 	        if(isset($pathMappings[$mountName]) ){
-			$m=['driver'=>$this->driver('mapping'),
+			$m=['driver'=>self::getInstance($scheme, $mountName)->driver('mapping'),
 			     'paths' => $pathMappings[$mountName], 
 			    'scheme'=>$scheme, 
 			    'host' => $mountName, 
 			    'hostType' => 'domain'];  
 		}elseif(isset($pathMappings['*']) ){
-			$m=['driver'=>$this->driver('mapping'), 
+			$m=['driver'=>self::getInstance($scheme, '*')->driver('mapping'), 
 			    'paths' => $pathMappings['*'],
 			    'scheme'=>$scheme, 
 			    'host' => '*', 
