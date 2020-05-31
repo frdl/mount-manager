@@ -14,8 +14,11 @@ use Covex\Stream;
 use Covex\Stream\File\Entity;
 use Covex\Stream\File\EntityInterface;
 
+use frdl\mount\Driver;
+use frdl\mount\Manager;
+
 //Covex\Stream\Filesystem
-class Transactional
+class Transactional extends Driver
 {
     /**
      * @var Partition[]
@@ -169,7 +172,7 @@ public static function getOptions() :array{
      *
      * @return array|bool
      */
-    public function url_stat(string $url, int $flags)
+    public function url_stat(string $url, int $flags,Manager $magic_stream = null)
     {
         $partition = static::getPartition($url);
         $path = static::getRelativePath($url);
@@ -182,7 +185,7 @@ public static function getOptions() :array{
      *
      * @see http://www.php.net/manual/en/streamwrapper.mkdir.php
      */
-    public function mkdir(string $url, int $mode, int $options): bool
+    public function mkdir(string $url, int $mode, int $options,Manager $magic_stream = null): bool
     {
         $partition = self::getPartition($url);
         $path = self::getRelativePath($url);
@@ -195,7 +198,7 @@ public static function getOptions() :array{
      *
      * @see http://www.php.net/manual/en/streamwrapper.rmdir.php
      */
-    public function rmdir(string $url, int $options): bool
+    public function rmdir(string $url, int $options,Manager $magic_stream = null): bool
     {
         $partition = self::getPartition($url);
         $path = self::getRelativePath($url);
@@ -208,7 +211,7 @@ public static function getOptions() :array{
      *
      * @see http://www.php.net/manual/en/streamwrapper.unlink.php
      */
-    public function unlink(string $url): bool
+    public function unlink(string $url,Manager $magic_stream = null): bool
     {
         $partition = self::getPartition($url);
         $path = self::getRelativePath($url);
@@ -221,7 +224,7 @@ public static function getOptions() :array{
      *
      * @see http://www.php.net/manual/en/streamwrapper.rename.php
      */
-    public function rename(string $srcPath, string $dstPath): bool
+    public function rename(string $srcPath, string $dstPath,Manager $magic_stream = null): bool
     {
         $partition = self::getPartition($srcPath);
 
@@ -236,7 +239,7 @@ public static function getOptions() :array{
      *
      * @see http://www.php.net/manual/en/streamwrapper.dir-opendir.php
      */
-    public function dir_opendir(string $url): bool
+    public function dir_opendir(string $url,Manager $magic_stream = null): bool
     {
         $partition = self::getPartition($url);
         $path = self::getRelativePath($url);
@@ -262,7 +265,7 @@ public static function getOptions() :array{
      *
      * @see http://www.php.net/manual/en/streamwrapper.dir-readdir.php
      */
-    public function dir_readdir()
+    public function dir_readdir(Manager $magic_stream = null)
     {
         $value = current($this->dirFiles);
 
@@ -281,7 +284,7 @@ public static function getOptions() :array{
      *
      * @see http://www.php.net/manual/en/streamwrapper.dir-closedir.php
      */
-    public function dir_closedir(): bool
+    public function dir_closedir(Manager $magic_stream = null): bool
     {
         unset($this->dirFiles);
 
@@ -293,7 +296,7 @@ public static function getOptions() :array{
      *
      * @see http://www.php.net/manual/en/streamwrapper.dir-rewinddir.php
      */
-    public function dir_rewinddir(): bool
+    public function dir_rewinddir(Manager $magic_stream = null): bool
     {
         reset($this->dirFiles);
 
@@ -305,7 +308,7 @@ public static function getOptions() :array{
      *
      * @see http://www.php.net/manual/en/streamwrapper.stream-open.php
      */
-    public function stream_open(string $url, string $mode, int $options, ?string &$openedPath): bool
+    public function stream_open(string $url, string $mode, int $options, ?string &$openedPath,Manager $magic_stream = null): bool
     {
         $partition = self::getPartition($url);
         $path = self::getRelativePath($url);
@@ -327,7 +330,7 @@ public static function getOptions() :array{
      *
      * @see http://www.php.net/manual/en/streamwrapper.stream-close.php
      */
-    public function stream_close(): void
+    public function stream_close(Manager $magic_stream = null): void
     {
         fclose($this->filePointer);
     }
@@ -337,7 +340,7 @@ public static function getOptions() :array{
      *
      * @see http://www.php.net/manual/en/streamwrapper.stream-read.php
      */
-    public function stream_read(int $count): string
+    public function stream_read(int $count,Manager $magic_stream = null): string
     {
         return fread($this->filePointer, $count);
     }
@@ -347,7 +350,7 @@ public static function getOptions() :array{
      *
      * @see http://www.php.net/manual/en/streamwrapper.stream-stat.php
      */
-    public function stream_stat(): array
+    public function stream_stat(Manager $magic_stream = null): array
     {
         return fstat($this->filePointer);
     }
@@ -357,7 +360,7 @@ public static function getOptions() :array{
      *
      * @see http://www.php.net/manual/en/streamwrapper.stream-eof.php
      */
-    public function stream_eof(): bool
+    public function stream_eof(Manager $magic_stream = null): bool
     {
         return feof($this->filePointer);
     }
@@ -367,7 +370,7 @@ public static function getOptions() :array{
      *
      * @see http://www.php.net/manual/en/streamwrapper.stream-tell.php
      */
-    public function stream_tell(): int
+    public function stream_tell(Manager $magic_stream = null): int
     {
         return ftell($this->filePointer);
     }
@@ -377,7 +380,7 @@ public static function getOptions() :array{
      *
      * @see http://www.php.net/manual/en/streamwrapper.stream-seek.php
      */
-    public function stream_seek(int $offset, int $whence = SEEK_SET): bool
+    public function stream_seek(int $offset, int $whence = SEEK_SET,Manager $magic_stream = null): bool
     {
         return 0 === fseek($this->filePointer, $offset, $whence);
     }
@@ -387,7 +390,7 @@ public static function getOptions() :array{
      *
      * @see http://www.php.net/manual/en/streamwrapper.stream-write.php
      */
-    public function stream_write(string $data): int
+    public function stream_write(string $data,Manager $magic_stream = null): int
     {
         return fwrite($this->filePointer, $data);
     }
@@ -397,7 +400,7 @@ public static function getOptions() :array{
      *
      * @see http://www.php.net/manual/en/streamwrapper.stream-flush.php
      */
-    public function stream_flush(): bool
+    public function stream_flush(Manager $magic_stream = null): bool
     {
         return fflush($this->filePointer);
     }
@@ -409,7 +412,7 @@ public static function getOptions() :array{
      *
      * @see http://php.net/manual/ru/streamwrapper.stream-metadata.php
      */
-    public function stream_metadata(string $url, int $option, $value): bool
+    public function stream_metadata(string $url, int $option, $value,Manager $magic_stream = null): bool
     {
         $partition = self::getPartition($url);
         $path = self::getRelativePath($url);
