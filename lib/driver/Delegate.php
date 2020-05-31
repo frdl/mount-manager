@@ -49,7 +49,16 @@ public function getTargetStreamWrapper($method, $arguments) :\stdclass{
 			$i = Manager::getInstance()->getMountsByPath($i);
 		     }
 			
+		    if(\is_array($i) && !isset($i['driver']) ){
+			$i = array_shift($i);    
+		    }
 			
+			 
+		    if(\is_array($i) && isset($i['driver']) ){
+			$i = $i['driver'];    
+		    }	
+			
+		    reeturn \is_object($i) && ($i instanceof Driver || \is_callable([$i, 'stream_open']));	
 		},
 		'hint' => 'Delegate this StreamWrapper to another target StreamWrapper.';     
 	      ],  
