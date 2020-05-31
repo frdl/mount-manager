@@ -65,6 +65,12 @@ class Mapping extends Delegate
 						$DNS, 
 					       function($value, $protocol, $Writable){
 						       
+                                                   $stream = new Stream($protocol, 
+									$value,
+									$Writable
+								       );
+
+                                                    Mapping::$StreamManager::create()->registerStream($stream);
 					       }
 		   );	
 		}
