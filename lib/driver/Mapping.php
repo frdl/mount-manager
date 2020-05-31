@@ -5,6 +5,7 @@ namespace frdl\mount\driver;
 use frdl\mount\Manager;
 use frdl\mount\Exception;
 use frdl\mount\Driver;
+use frdl\mount\driver\DevNull;
 
 use Nijens\ProtocolStream\StreamManager;
 /**
@@ -13,14 +14,27 @@ use Nijens\ProtocolStream\StreamManager;
  * This is a local filesystem magic driver, it is mainly meant as an example even though it can
  * be used to simulate symbolic links.
  */
-class Mapping implements Driver
+class StreamMapping
+{
+   public function __construct(string $protocol, bool $writable, array $hostLocationMapping){
+	   
+   }
+	
+}
+
+
+
+class Mapping extends DevNull
 {
 
   protected $singleton = true;
-  protected $StreamManager;
+  protected static $StreamManager = null;
  
 	public function __construct(array $options){     
-	        $this->StreamManager = StreamManager::create();		
+	    if(null === self::$StreamManager){	
+	        self::$StreamManager = StreamManager::create();		
+	    }
+		
 		$options['mappings'] = array_merge($options['mappings'], $options['protocol-domain-mappings'] );	
 	}
 
@@ -30,7 +44,7 @@ class Mapping implements Driver
   	      [	  
 	        'key' => 'namespace', 		  
 		'required' => false,  
-    'default' => 'web+fan+alias-mapping',
+                'default' => 'web+fan+alias-mapping',
 		'type' => function(string $i){
 		      return \is_string($i);
 		},
@@ -242,4 +256,5 @@ class Mapping implements Driver
 		}
     
     */
+
 }
