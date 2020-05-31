@@ -128,14 +128,14 @@ class Manager extends AbstractManager
 	}
     }
 	
-    public function __callStatic($method, $parameters)
+    public static function __callStatic($method, $parameters)
     {
 	if('driver'===$method){
 	    return self::registerDriver(...$parameters);
 	}elseif(\preg_match("/^create([A-Z][.*]+)Driver$/", $method, $matches)    ){
 	  $type = \strtolower($matches[1]);
 	  \array_unshift($parameters, $type);	
-	  return self::getInstance()->makeDriver(...$parameters);
+	  return self::getInstance($type)->makeDriver(...$parameters);
 	}
 	    
         return self::getInstance()->driver()->$method(...$parameters);
@@ -262,6 +262,13 @@ class Manager extends AbstractManager
 			
 		$name = \strtolower($name);
 		
+		
+		if (!preg_match('/^[a-z0-9._-]+$/',$name))
+			throw new Exception("Invalid mount name '[".$scheme.'://]'.$name."'.",104);
+		
+				
+		
+		
 		if (isset(self::$mounts[$scheme]) && isset(self::$mounts[$scheme][$name]))
 			throw new Exception("Mount point '".$scheme.'://'.$name."' already exists.",101);
 		
@@ -271,13 +278,7 @@ class Manager extends AbstractManager
 		  } 
 		
 
-		
-
-		
-		if (!preg_match('/^[a-z0-9._-]+$/',$name))
-			throw new Exception("Invalid mount name '[".$scheme.'://]'.$name."'.",104);
-		
-					
+			
 		try{				
 			self::getInstance()			
 				->{'create'.\ucfirst($type).'Driver'}($options, $name, $scheme)		
@@ -424,7 +425,7 @@ class Manager extends AbstractManager
 	 * @param string|null $driver The fully-qualified class name or null to reset to default.
 	 * @return string|void
 	 */
-	public static function registerDriver($type,$driver = null){
+	public static function registerDriver($type,Driver $driver = null){
 		self::init();
 		
 		
@@ -534,6 +535,7 @@ class Manager extends AbstractManager
 		{
 		$path_info = parse_url($path);
 		$this->scheme = $path_info['scheme'];
+		
 		if ($this->driver = self::driver_object($path_info['scheme'], $path_info['host'])){
 			return $this->driver->stream_open($path_info,$mode,$options,$opened_path,$this);
 		}
