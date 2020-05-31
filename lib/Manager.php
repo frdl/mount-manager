@@ -212,7 +212,7 @@ class Manager extends AbstractManager
      *
      * @throws \DeGraciaMathieu\Manager\Exceptions\DriverResolutionException
      */
-    protected function makeDriverInstance(string $type)
+    public function makeDriverInstance(string $type)
     {
 	self::init();    
 	    
@@ -284,7 +284,7 @@ class Manager extends AbstractManager
 
 			
 		try{				
-			self::getInstance()			
+			self::getInstance($scheme, $name)			
 				->{'create'.\ucfirst($type).'Driver'}($options, $name, $scheme)		
 			;				 
 		}catch(\Exception $e){					
@@ -513,7 +513,7 @@ class Manager extends AbstractManager
 		{
 		$class = \strtolower($class);
 		
-		if (\strpos($class,\ltrim(__NAMESPACE__, '\\/').'\\driver\\',0) === 0){
+		if (\strpos($class,__NAMESPACE__.'\\driver\\',0) === 0){
 			$path = __DIR__.\DIRECTORY_SEPARATOR.'driver'.\DIRECTORY_SEPARATOR.\basename($class).'.php';
 			if (!file_exists($path))
 				throw new Exception("Specified driver class '".$class."' does not exist.",1);
@@ -537,10 +537,11 @@ class Manager extends AbstractManager
 	 */
 	public function stream_open($path,$mode,$options,&$opened_path)
 		{
-		$path_info = parse_url($path);
+		$path_info = \parse_url($path);
 		$this->scheme = $path_info['scheme'];
+		$this->mountName = $path_info['host'];
 		
-		if ($this->driver = self::driver_object($path_info['scheme'], $path_info['host'])){
+		if ($this->driver = self::driver_object($this->scheme, $this->mountName)){
 			return $this->driver->stream_open($path_info,$mode,$options,$opened_path,$this);
 		}
 		
@@ -661,7 +662,10 @@ class Manager extends AbstractManager
 	public function unlink($path)
 		{
 		$path_info = parse_url($path);
-		if ($this->driver = self::driver_object($path_info['scheme'], $path_info['host'])){
+		$this->scheme = $path_info['scheme'];
+		$this->mountName = $path_info['host'];
+		
+		if ($this->driver = self::driver_object($this->scheme, $this->mountName)){
 			return $this->driver->unlink($path_info,$this);
 		}
 		throw new Exception("Unknown mount '".$path_info['host']."'.",100);
@@ -674,7 +678,10 @@ class Manager extends AbstractManager
 	public function url_stat($path,$flags)
 		{
 		$path_info = parse_url($path);
-		if ($this->driver = self::driver_object($path_info['scheme'],$path_info['host'])){
+		$this->scheme = $path_info['scheme'];
+		$this->mountName = $path_info['host'];
+		
+		if ($this->driver = self::driver_object($this->scheme, $this->mountName)){
 			return $this->driver->url_stat($path_info,$flags,$this);
 		}
 		throw new Exception("Unknown mount '".$path_info['host']."'.",100);
@@ -687,7 +694,10 @@ class Manager extends AbstractManager
 	public function stream_metadata($path,$option,$value)
 		{
 		$path_info = parse_url($path);
-		if ($this->driver = self::driver_object($path_info['scheme'], $path_info['host'])){
+		$this->scheme = $path_info['scheme'];
+		$this->mountName = $path_info['host'];
+		
+		if ($this->driver = self::driver_object($this->scheme, $this->mountName)){
 			return $this->driver->stream_metadata($path_info,$option,$value,$this);
 		}
 		throw new Exception("Unknown mount '".$path_info['host']."'.",100);
@@ -700,7 +710,10 @@ class Manager extends AbstractManager
 	public function mkdir($path,$mode,$options)
 		{
 		$path_info = parse_url($path);
-		if ($this->driver = self::driver_object($path_info['scheme'], $path_info['host'])){
+		$this->scheme = $path_info['scheme'];
+		$this->mountName = $path_info['host'];
+		
+		if ($this->driver = self::driver_object($this->scheme, $this->mountName)){
 			return $this->driver->mkdir($path_info,$mode,$options,$this);
 		}
 		throw new Exception("Unknown mount '".$path_info['host']."'.",100);
@@ -713,8 +726,12 @@ class Manager extends AbstractManager
 	public function rmdir($path,$options)
 		{
 		$path_info = parse_url($path);
-		if ($this->driver = self::driver_object($path_info['scheme'], $path_info['host']))
+		$this->scheme = $path_info['scheme'];
+		$this->mountName = $path_info['host'];
+		
+		if ($this->driver = self::driver_object($this->scheme, $this->mountName)){
 			return $this->driver->rmdir($path_info,$options,$this);
+		}
 		
 		throw new Exception("Unknown mount '".$path_info['host']."'.",100);
 		}
@@ -746,8 +763,12 @@ class Manager extends AbstractManager
 	public function dir_opendir($path,$options)
 		{
 		$path_info = parse_url($path);
-		if ($this->driver = self::driver_object($path_info['scheme'], $path_info['host']))
+		$this->scheme = $path_info['scheme'];
+		$this->mountName = $path_info['host'];
+		
+		if ($this->driver = self::driver_object($this->scheme, $this->mountName)){
 			return $this->driver->dir_opendir($path_info,$options,$this);
+		}
 		
 		throw new Exception("Unknown mount '".$path_info['host']."'.",100);
 		}
