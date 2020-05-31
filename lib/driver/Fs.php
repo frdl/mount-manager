@@ -14,20 +14,28 @@ use frdl\mount\Driver;
  */
 class Fs implements Driver
 	{
+	protected $options=[];
 	protected $directory;
 	protected $resources = [];
 	protected $directories = [];
 
-	public function __construct(array $options)
+	public function __construct($options)
 		{
-		if (!isset($options['directory']))
+		
+		
+		$this->options=(!is_object($options) || true!==$options instanceof ContextContainer)
+			? ContextContainer::create($options, '${', '}')
+			: $options	
+			;
+		
+		if (!isset($this->options['directory']))
 			throw new Exception("The 'directory' option is required.",200);
-		if (empty($options['directory']))
+		if (empty($this->options['directory']))
 			throw new Exception("The 'directory' option cannot be empty.",201);
-		$this->directory = $options['directory'];
+		$this->directory = $this->options['directory'];
 		if (!is_dir($this->directory))
 			throw new Exception("Could not mount '".$this->directory."', the directory does not exist.",202);
-		}
+	}
 
 	public static function getOptions() :array{
 	  return [
