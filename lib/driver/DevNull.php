@@ -7,8 +7,10 @@ use frdl\mount\Exception;
 use frdl\mount\Driver;
 
 use frdl\ContextContainer;
+use frdl\mount\DriverInterface;
 
-class DevNull implements Driver
+
+class DevNull extends Driver
 {
    protected $options;	
 	
