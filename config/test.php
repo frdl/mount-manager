@@ -17,7 +17,7 @@ use bovigo\vfs\vfsStreamWrapper;
 
 return [
 	Manager::class => function(ContainerInterface $c){
-    $Manager = Manager::getInstance('web+fan', 'test');
+                 $Manager = Manager::getInstance('web+fan', 'test');
 		return $Manager;
 	},	
 	
@@ -25,7 +25,7 @@ return [
 'config.managers.mounting' => add([		
          [
               'name' => 'vhost.test',
-              'scheme' =>  'webf+vfs',
+              'scheme' =>  'web+vfs',
               'type' => 'virtual',
               ''options' => [
                    'root' => '~',
@@ -36,7 +36,16 @@ return [
                     
                     'target' => new vfsStreamWrapper
               ],
-         ]
+	      
+	      
+             [
+              'name' => 'project.workspace.frdl',
+              'scheme' =>  'frdl',
+              'type' => 'transactional',
+              ''options' => [
+                    'scheme'=> 'project',
+                    'directory' => get('root.dir'),
+              ],     
 	]),
 
 ];
