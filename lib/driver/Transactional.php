@@ -2,6 +2,7 @@
 
 declare(strict_types=1);
 
+namespace frdl\mount\driver;
 /*
  * (c) Andrey F. Mindubaev <covex.mobile@gmail.com>
 
@@ -35,14 +36,46 @@ class Transactional
      * @var EntityInterface
      */
     protected $fileEntity;
+    protected $options;
 
-    public function __construct()
+    public function __construct(array $opts = [])
     {
         $this->filePointer = null;
         $this->fileEntity = null;
+               
+         $this->options=array_merge([
+                        'scheme' => 'web+workspace+transaction',
+                        'directory' => null,
+                    ], $opts);        
+               
+               
+               if(count($opts)>0){
+                     call_user_fucn_array(self::class.'::register', [
+                                   $this->options['scheme'],
+                                   $this->options['directory']
+                                ]);        
+               }
     }
 
-           
+public static function getOptions() :array{
+	  return [
+    
+  	  
+      [	  
+	  'key' => 'stage', 		  
+		'required' => false,  
+                'default' => null,
+		'type' => function($i){
+		
+		    return true;	
+		},
+		'hint' => 'Mounted stage.';     
+	      ],  
+    
+    
+	  
+	  ];
+     }           
    /**
      * Register stream wrapper.
      */
