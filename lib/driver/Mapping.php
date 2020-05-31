@@ -74,15 +74,19 @@ class Mapping extends Delegate
 
                                                     StreamManager::create()->registerStream($stream);
 						   foreach($value as $host => $location){    
-						      Manager::mount('frdlweb:'.$stream->getProtocol(), $host,'delegate',
-								     ['target'=>$stream->getProtocol().'://'.$host,
-								     'mappings'=>array_merge(
-									 $stream->getPaths(),
-								      [
-								         $host => $location
-								      ]]
-											    )
-								      );
+						      Manager::mount('frdl+'.$stream->getProtocol(),
+								     $host,
+								     'transactional',								   
+								     [
+									     'scheme'=>'web+'
+									     .$stream->getProtocol()
+									     .'+'
+									     .implode('--',array_reverse(explode('.', $host)))
+									     ,								     
+									     'directory' =>$location,
+								     
+								      ]								  
+								   );
 						   }
 					       }
 		   );	
