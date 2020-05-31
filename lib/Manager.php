@@ -58,7 +58,10 @@ class Manager extends AbstractManager
 		    !isset($stages[$name]) && $stages[$name] = [];
 		    !isset($stages[$name][$scheme]) && $stages[$name][$scheme] = [];	
 			
-		    $stages[$name][$scheme] = array_merge($stages[$name][$scheme], $streams);	
+		  //  $stages[$name][$scheme] = array_merge($stages[$name][$scheme], $streams);	
+			if(!in_array($stages[$name][$scheme], $streams)){
+				$stages[$name][$scheme][]= $streams;
+			}
 		}
 	    }
 		
