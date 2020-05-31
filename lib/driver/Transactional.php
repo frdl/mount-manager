@@ -23,8 +23,9 @@ use Covex\Stream\File\EntityInterface;
 use frdl\mount\Driver;
 use frdl\mount\Manager;
 
-//Covex\Stream\Filesystem
-class Transactional extends Driver
+use frdl\mount\DriverInterface;
+
+class Transactional extends Driver implements DriverInterface
 {
     /**
      * @var Partition[]
