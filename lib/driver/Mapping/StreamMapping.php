@@ -3,16 +3,22 @@ namespace frdl\mount\driver\Mapping;
 
 use frdl\mount\driver\Mapping\DNS;
 
-final class StreamMapping extends \IteratorIterator
+final class StreamMapping extends \ArrayIterator
 {
+	
+   protected $callback=null;
    protected $protocol;
    protected $writable;	
-   protected $map;	
+   protected $values = [];	
 	
-   public function __construct(string $protocol, bool $writable, DNS $mountDNS/*\Generator $map = null*/){
+   public function __construct(string $protocol, bool $writable, DNS $mountDNS, callable $callback = null){
+	   $this->callback=$callback;
 	   $this->protocol = $protocol;
 	   $this->writable = $writable;
-	   $this->map = $this->createMapping($mountDNS);
+
+	 foreach( $this->createMapping($mountDNS) as $mount){
+		array_push($this->values, [$mount->key => $mount->value]); 
+	 }
    }
 	
 	
@@ -21,5 +27,20 @@ final class StreamMapping extends \IteratorIterator
 	        yield $mount; 
 	    }
   }
+	
+  public function current() :DomainMount {
+    $value = parent::current();
+    if(!is_callable($this->callback)){
+	return $value;    
+    }
+    return call_user_func($this->callback, [$value, $this->protocol, $this->writable]);
+  } 	
+	
+
+   
+public function offsetGet($offset) :DomainMount
+    {
+        return parent::offsetGet($offset);
+    }
 	
 }
