@@ -10,11 +10,15 @@ use frdl\ContextContainer;
 
 class Delegate implements Driver
 {
-   protected $options;	
-   
+    protected $options;	
+    protected static $StreamManager = null;
 	
   public function __construct($options){     
-
+	    if(null === self::$StreamManager){	
+	        self::$StreamManager = StreamManager::create();		
+	    }
+	  
+	  
 		$this->options=(!is_object($options) || true!==$options instanceof ContextContainer)
 			? ContextContainer::create($options, '${', '}')
 			: $options	
@@ -236,8 +240,9 @@ class Delegate implements Driver
 
 
 
-	public function quote(array $parameters,Manager $magic_stream = null){
-     return null;
+	
+  public function quote(array $parameters,Manager $magic_stream = null){
+      return $this->delegate(__FUNCTION__, func_get_args());
   }
 
 
