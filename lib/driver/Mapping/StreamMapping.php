@@ -16,13 +16,13 @@ final class StreamMapping extends \ArrayIterator
 	   $this->protocol = $protocol;
 	   $this->writable = $writable;
 
-	 foreach( $this->createMapping($mountDNS) as $mount){
+	 foreach( $this->createMapping($this->protocol, $this->writable, $mountDNS) as $mount){
 		array_push($this->values, [$mount->key => $mount->value]); 
 	 }
    }
 	
 	
-  public function createMapping(DomainMount... $entries){
+  public function createMapping(string $protocol,bool $writable=true, DomainMount... $entries){
 	    while ($mount = array_shift($entries)) {  
 	        yield $mount; 
 	    }
