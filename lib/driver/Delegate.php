@@ -45,7 +45,11 @@ public function getTargetStreamWrapper($method, $arguments) :\stdclass{
 		'required' => false,  
     'default' => null,
 		'type' => function(&$i){
-		     
+		     if(\is_string($i)){
+			$i = Manager::getInstance()->getMountsByPath($i);
+		     }
+			
+			
 		},
 		'hint' => 'Delegate this StreamWrapper to another target StreamWrapper.';     
 	      ],  
