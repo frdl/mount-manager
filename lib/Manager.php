@@ -56,6 +56,34 @@ class Manager extends AbstractManager
 	}
 	   
 	
+	
+   public static function getMappings(string $name=null, string $scheme=null){
+	$mappings = [];
+$mounts = array_merge(\frdl\mount\Manager::getInstance($scheme, $name)
+   ->getMountsByPath(string $path),
+
+ \frdl\mount\Manager::getInstance($scheme, $name)
+   ->getMountsByStage($name, $scheme)
+);
+
+
+foreach($mounts as $mount){
+        /*  $mount===['driver'=>$stream, 'paths' => [], 'scheme'=>$scheme, 'host' => $name, 'hostType' => 'stage'] */
+   if(!isset($mappings[$mount['scheme']])){
+        $mappings[$mount['scheme']] = [];
+   }
+
+   if(!isset($mappings[$scheme][$mount['host']] )){
+        $mappings[$mount['scheme']][$mount['host']]  = [];
+   }
+
+    $mappings[$mount['scheme']][$mount['host']] = array_merge($mappings[$mount['scheme']][$mount['host']], $mount['paths']);
+}
+	   
+	   
+     return $mappings;  
+   }
+	
    public function getMountsByPath(string $path)
     {
 		$path_info = \parse_url($path);
