@@ -69,7 +69,12 @@ class Manager extends AbstractManager
 	   
           $ProtocolDomainsMappingStream = self::$StreamManager->getStream($scheme);
 	  if($ProtocolDomainsMappingStream && $ProtocolDomainsMappingStream instanceof \Nijens\ProtocolStream\Stream\StreamInterface){
-		$pathMapping = $ProtocolDomainsMappingStream->getPaths();  
+		$pathMappings = $ProtocolDomainsMappingStream->getPaths();  
+	        if(isset($pathMappings[$mountName]) ){
+			
+		}elseif(isset($pathMappings['*']) ){
+			
+		}
 	  }
     }
 	
