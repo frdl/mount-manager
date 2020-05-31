@@ -335,6 +335,26 @@ class Manager extends AbstractManager
 		return false;
 		}
 
+	
+	
+    /**
+     * Get a driver instance.
+     *
+     * @param  string  $name
+     * @return mixed
+     *
+     * @throws \DeGraciaMathieu\Manager\Exceptions\DriverOverwrittenException
+     * @throws \DeGraciaMathieu\Manager\Exceptions\DriverResolutionException
+     */
+    public function driver($name = null)
+    {
+        $name = $name ?: $this->getDefaultDriver();
+
+        $driver = $this->load($name);
+
+        return $driver;
+    }	
+	
 	/**
 	 * Sets or gets a driver class name for a specific magic mount type. Call with one argument to
 	 * get the driver class name for the passed type, call with two arguments to set. You can use
@@ -343,7 +363,7 @@ class Manager extends AbstractManager
 	 * @param string|null $driver The fully-qualified class name or null to reset to default.
 	 * @return string|void
 	 */
-	public static function driver($type,$driver = null){
+	public static function registerDriver($type,$driver = null){
 		self::init();
 		
 		
@@ -643,7 +663,10 @@ class Manager extends AbstractManager
 		if ($path_info['host'] !== $path_info_to['host'])
 			throw new Exception('Cannot rename a file across magic mounts.',110);
 		
-		if ($this->driver = self::driver_object($path_info['scheme'], $path_info['host']))
+		$this->driver = self::driver_object($path_info['scheme'], $path_info['host']);
+		
+		
+		if ($this->driver)
 			return $this->driver->rename($path_info,$path_info_to,$this);
 		
 		throw new Exception("Unknown mount '".$path_info['host']."'.",100);
