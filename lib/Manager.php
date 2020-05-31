@@ -102,7 +102,7 @@ class Manager extends AbstractManager
      */
     public function iDriver($type = null)
     {
-        $type = $type ?: $this->getDefaultDriver();
+        $type = $type ?: self::getInstance()->getDefaultDriver();
 
         $driver = $this->load($type);
 
@@ -138,7 +138,8 @@ class Manager extends AbstractManager
 	  return self::getInstance($type)->makeDriver(...$parameters);
 	}
 	    
-        return self::getInstance()->driver()->$method(...$parameters);
+     //   return self::getInstance()->driver()->$method(...$parameters);
+	return call_user_func_array([self::getInstance(), $method], $parameters);    
     }
 	
     public function __call($method, $parameters)
@@ -148,13 +149,16 @@ class Manager extends AbstractManager
 	}elseif(\preg_match("/^create([A-Z][.*]+)Driver$/", $method, $matches)    ){
 	  $type = \strtolower($matches[1]);
 	  \array_unshift($parameters, $type);	
+	  if(1>=count($parameters))\array_unshift($parameters, []);
+	  if(2>=count($parameters))\array_unshift($parameters, $this->mountName);	
+	  if(3>=count($parameters))\array_unshift($parameters, $this->scheme);	
 	  return $this->makeDriver(...$parameters);
 	}
 	    
         return $this->driver()->$method(...$parameters);
     }
 	
-    protected function makeDriver($type){
+    public function makeDriver($type){
 	$parameters = func_get_args();
 	array_shift($parameters);
         $class = isset(self::$drivers[$type]) ? self::$drivers[$type] : __NAMESPACE__.'\\driver\\'.\ucfirst($type);    
