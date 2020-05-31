@@ -61,6 +61,19 @@ public function getTargetStreamWrapper($method, $arguments) :\stdclass{
 	
 	public static function getOptions() :array{
 	  return [
+		  
+		  
+	       [	  
+	  'key' => 'fs.virtual.structure', 		  
+		'required' => false,  
+                'default' => [],
+		'type' => function(array $i = null){
+                     return \is_array($i);	
+		},
+		'hint' => 'Abstract Filesystem Structure and Contents AsArray (optional).';     
+	      ], 
+		  
+		  
        [	  
 	  'key' => 'directory', 		  
 		'required' => false,  
