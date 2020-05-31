@@ -1,6 +1,7 @@
 <?php
 namespace frdl\mount;
 
+use frdl\mount\Driver;
 use DeGraciaMathieu\Manager\Manager as AbstractManager;
 
 class Manager extends AbstractManager
@@ -57,7 +58,19 @@ class Manager extends AbstractManager
 		$scheme = $path_info['scheme'];
 		$mountName = $path_info['host'];
 
-      
+	   
+	  $mounts = []; 
+	   
+	   $driver = self::driver_object($scheme, $mountName);
+	  if($driver && $driver instanceof Driver){
+		$mounts[]=$driver;  
+	  }
+	   
+	   
+          $ProtocolDomainsMappingStream = self::$StreamManager->getStream($scheme);
+	  if($ProtocolDomainsMappingStream && $ProtocolDomainsMappingStream instanceof \Nijens\ProtocolStream\Stream\StreamInterface){
+		$pathMapping = $ProtocolDomainsMappingStream->getPaths();  
+	  }
     }
 	
 	
