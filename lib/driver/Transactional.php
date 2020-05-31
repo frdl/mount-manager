@@ -69,7 +69,17 @@ class Transactional extends Driver implements DriverInterface
 
 public static function getOptions() :array{
 	  return [
+         [	  
+	  'key' => 'scheme', 		  
+		'required' => true,  
+                'default' => 'frdl',
+		'type' => function(string $i){		
+		    return \is_string($i);	
+		},
+		'hint' => 'Mounted stage.';     
+	      ],  
     
+     
   	  
       [	  
 	  'key' => 'stage', 		  
