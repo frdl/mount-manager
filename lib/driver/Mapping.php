@@ -63,12 +63,14 @@ class Mapping extends Delegate
 		  $mappings[]= new StreamMapping($scheme,
 					        $map['writable'], 
 						$DNS, 
-					       function(){
+					       function($value, $protocol, $Writable){
 						       
 					       }
 		   );	
 		}
+		$this->options->set('${self.config}.map', $mappings);
 		
+	  return $this;	
 	}
 	/*
 	new StreamMapping(string $protocol, bool $writable, DNS $mountDNS, callable $callback = null)
