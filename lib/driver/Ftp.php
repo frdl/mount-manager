@@ -23,8 +23,17 @@ class Ftp implements Driver
 
 	protected $last_measurements;
 
-	public function __construct(array $options)
+	public function __construct($options)
 		{
+		
+			
+		$this->options=(!is_object($options) || true!==$options instanceof ContextContainer)
+			? ContextContainer::create($options, '${', '}')
+			: $options	
+			;
+		
+		$options=&$this->options;
+		
 		if (!function_exists('ftp_connect'))
 			throw new Exception('FTP extension not available',103);
 		if (!isset($options['host']))
