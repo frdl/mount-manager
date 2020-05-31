@@ -9,8 +9,9 @@ use frdl\mount\Driver;
 use frdl\ContextContainer;
 use Nijens\ProtocolStream\StreamManager;
 
+use frdl\mount\DriverInterface;
 
-class Delegate implements Driver
+class Delegate implements DriverInterface
 {
     protected $options;	
     protected static $StreamManager = null;
