@@ -10,6 +10,12 @@ namespace frdl\mount\driver;
  */
 
 use Covex\Stream;
+use Covex\Stream\Exception;
+use Covex\Stream\Entity;
+use Covex\Stream\Partition;
+use Covex\Stream\Filesystem;
+use Covex\Stream\Changes;
+
 
 use Covex\Stream\File\Entity;
 use Covex\Stream\File\EntityInterface;
