@@ -28,24 +28,29 @@ class Manager extends AbstractManager
   
         ];
 
-	protected $driver;
+	protected $_driver;
 	public $id;
 	public $context;
 	
 	protected $scheme = null;
-  
+        
+	protected $mountName;
         protected static $instance = null;
 	
-	public static function getInstance(){
+	public static function getInstance($scheme=null, $mount=null){
 	   	if(null===self::$instance){
-		   self::$instance = new self;	
-		}
+		   self::$instance = new self($scheme, $mount);	
+		}		
+		
+	  if (!is_null($scheme) && !is_null($mount)){
+		self::$instance->driver = self::driver_object($scheme, $mount);
+	  }
 		
 	   return self::$instance;	
 	}
 	
 	
-	public function __construct(){
+	public function __construct($scheme=null, $mount=null){
 		
 		parent::__construct();
 		
@@ -56,6 +61,15 @@ class Manager extends AbstractManager
 		
 		$this->id = self::$_id++;
 		
+		$this->mountName = $scheme.'_disk_'.$this->id;
+		
+		
+		if (!is_null($scheme))
+			$this->scheme =$scheme;
+		
+		if (!is_null($mount))
+			$this->mountName =$mount;
+		
 		if (is_null($this->scheme))
 			$this->scheme = self::$wrapper;
 			
@@ -63,8 +77,31 @@ class Manager extends AbstractManager
 			$this->context = stream_context_create(['magic'=>['id'=>$this->id]]);
 		else
 			stream_context_set_option($this->context,['magic'=>['id'=>$this->id]]);
+		
+			
+		if (!is_null($this->scheme) && !is_null($this->mountName)){		
+			$this->driver = self::driver_object($this->scheme, $this->mountName);	
+		}
 	
 	}
+	
+    public function __get($name)
+    {
+	if(isset($this->{'_'.$name})){
+	    return $this->{'_'.$name};	
+	}elseif(isset($this->{$name})){
+	    return $this->{$name};	
+	}
+    }
+	
+    public function __set($name, $value)
+    {
+	if(isset($this->{'_'.$name})){
+	     $this->{'_'.$name} = $value;	
+	}elseif(isset($this->{$name}) && !is_array($this->{$name})){
+	        $this->{$name} = $value;		
+	}
+    }
 	
     public function __call($method, $parameters)
     {
@@ -82,7 +119,7 @@ class Manager extends AbstractManager
 	array_shift($parameters);
         $class = isset(self::$drivers[$type]) ? self::$drivers[$type] : __NAMESPACE__.'\\driver\\'.\ucfirst($type);    
 	$options = (count($parameters)) ? array_shift($parameters) : [];
-	$name = (count($parameters)) ? array_shift($parameters) : $type.'_disk_'.$this->id;
+	$name = (count($parameters)) ? array_shift($parameters) : $this->mountName;
 	$scheme = (count($parameters)) ? array_shift($parameters) : $this->scheme;
 	
 	    
