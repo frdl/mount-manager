@@ -12,12 +12,15 @@ class Delegate implements Driver
 {
     protected $options;	
     protected static $StreamManager = null;
+    protected static $MountManager = null;
 	
   public function __construct($options){     
 	    if(null === self::$StreamManager){	
 	        self::$StreamManager = StreamManager::create();		
 	    }
-	  
+	    if(null === self::$MountManager){	
+	        self::$MountManager = Manager::getInstance();		
+	    }	  
 	  
 		$this->options=(!is_object($options) || true!==$options instanceof ContextContainer)
 			? ContextContainer::create($options, '${', '}')
