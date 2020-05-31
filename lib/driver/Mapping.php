@@ -70,7 +70,7 @@ class Mapping extends Delegate
 									$Writable
 								       );
 
-                                                    Mapping::$StreamManager::create()->registerStream($stream);
+                                                    Mapping::$StreamManager->registerStream($stream);
 					       }
 		   );	
 		}
