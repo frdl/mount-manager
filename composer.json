@@ -18,7 +18,8 @@
 	],
 "require" : { 
     "php": ">=7.2",
-    "frdl/frdlweb-composer-installers" : ">=0.2",		
+    "frdl/frdlweb-composer-installers" : ">=0.2",
+    "steevanb/php-typed-array" : "2.1.2",	
     "degraciamathieu/manager" : "1.1.1",
     "frdl/web" : "*",
     "covex-nn/vfs" : "1.0.2",
