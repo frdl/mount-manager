@@ -22,7 +22,8 @@
     "degraciamathieu/manager" : "1.1.1",
     "frdl/web" : "*",
     "covex-nn/vfs" : "1.0.2",
-    "adlawson/vfs" : "0.12.1"	
+    "adlawson/vfs" : "0.12.1",
+    "niels-nijens/protocol-stream" : "1.0.2"	
 },
 "autoload": {
           "psr-4" : {
