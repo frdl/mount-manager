@@ -14,6 +14,7 @@ use frdl\mount\DriverInterface;
 
 use bovigo\vfs\vfsStream;
 use bovigo\vfs\vfsStreamDirectory;
+use bovigo\vfs\vfsStreamWrapper;
 
 class Virtual extends Delegate
 {
@@ -23,7 +24,9 @@ class Virtual extends Delegate
     protected $vfsStreamDirectory = null;
 	
 	
-  public function __construct($options){     
+  public function __construct($options){   
+    $this->options['target'] = new vfsStreamWrapper;	  
+	  
     parent::__construct($options);
 	    
    $this->rootDirectory(vfsStream::setup(
@@ -32,7 +35,8 @@ class Virtual extends Delegate
         $this->options['fs.virtual.structure']
     ));
 	  
-	  
+	$Wrapper = $this->options['target'];
+		 $Wrapper::register();  
  }
 	
  protected function rootDirectory(vfsStreamDirectory $dir = null) :vfsStreamDirectory 
