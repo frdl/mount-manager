@@ -27,7 +27,7 @@ class Virtual extends Delegate
     parent::__construct($options);
 	    
    $this->rootDirectory(vfsStream::setup(
-         '~',
+          $this->options['root'],
          755,
         $this->options['fs.virtual.structure']
     ));
@@ -61,6 +61,17 @@ public function getTargetStreamWrapper($method, $arguments) :\stdclass{
 	
 	public static function getOptions() :array{
 	  return [
+		  
+	      [	  
+	  'key' => 'root', 		  
+		'required' => false,  
+                'default' => '~',
+		'type' => function(string $i = null){
+                     return \is_null($i) || \is_string($i) ;	
+		},
+		'hint' => 'Root: The Virtual FS HOME Directory.';     
+	      ],  
+    
 		  
 		  
 	       [	  
