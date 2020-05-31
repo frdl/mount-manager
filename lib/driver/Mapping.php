@@ -6,6 +6,7 @@ use frdl\mount\Manager;
 use frdl\mount\Exception;
 use frdl\mount\Driver;
 
+use Nijens\ProtocolStream\StreamManager;
 /**
  * MagicMounter, by Marvin Janssen (http://marvinjanssen.me), released in 2017.
  * 
@@ -18,10 +19,10 @@ class Mapping implements Driver
   protected $singleton = true;
   protected $StreamManager;
  
-	public function __construct(array $options)
-		{
-       $options['mappings'] = array_merge($options['mappings'], $options['protocol-domain-mappings'] );
-		}
+	public function __construct(array $options){     
+	        $this->StreamManager = StreamManager::create();		
+		$options['mappings'] = array_merge($options['mappings'], $options['protocol-domain-mappings'] );	
+	}
 
 	public static function getOptions() :array{
 	  return [
