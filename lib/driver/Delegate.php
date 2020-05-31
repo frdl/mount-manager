@@ -7,6 +7,8 @@ use frdl\mount\Exception;
 use frdl\mount\Driver;
 
 use frdl\ContextContainer;
+use Nijens\ProtocolStream\StreamManager;
+
 
 class Delegate implements Driver
 {
