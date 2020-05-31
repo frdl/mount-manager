@@ -25,7 +25,7 @@
     "covex-nn/vfs" : "1.0.2",
     "adlawson/vfs" : "0.12.1",
     "niels-nijens/protocol-stream" : "1.0.2",
-    "bovigo/vfs-stream-examples" : "dev-master"
+    "mikey179/vfsstream" : "1.6.8"
 },
 "autoload": {
           "psr-4" : {
