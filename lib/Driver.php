@@ -7,6 +7,18 @@ use frdl\mount\DriverInterface;
 
 abstract class Driver implements DriverInterface
 	{
+	
+	 protected $shouldBeSingleton = false;
+	
+	 public function singleton(bool $is = null){
+		 if(\is_bool($is)){
+		    $this->shouldBeSingleton=$is;	 
+		 }
+		 
+		 
+	     return $this->shouldBeSingleton;	 
+	 }
+	
 	abstract public function __construct(array $options);
 	abstract public static function getOptions() :array;
 	
