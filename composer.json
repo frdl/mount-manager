@@ -20,7 +20,9 @@
     "php": ">=7.2",
     "frdl/frdlweb-composer-installers" : ">=0.2",		
     "degraciamathieu/manager" : "1.1.1",
-    "frdl/web" : "*"
+    "frdl/web" : "*",
+    "covex-nn/vfs" : "1.0.2",
+    "adlawson/vfs" : "0.12.1"	
 },
 "autoload": {
           "psr-4" : {
