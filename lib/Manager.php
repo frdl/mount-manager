@@ -63,7 +63,7 @@ class Manager extends AbstractManager
 	   
 	   $driver = self::driver_object($scheme, $mountName);
 	  if($driver && $driver instanceof Driver){
-		$mounts[]=$driver;  
+		$mounts[]=['driver'=>$driver, 'paths' => ['/'], 'scheme'=>$scheme, 'host' => $mountName];  
 	  }
 	   
 	   
@@ -71,11 +71,14 @@ class Manager extends AbstractManager
 	  if($ProtocolDomainsMappingStream && $ProtocolDomainsMappingStream instanceof \Nijens\ProtocolStream\Stream\StreamInterface){
 		$pathMappings = $ProtocolDomainsMappingStream->getPaths();  
 	        if(isset($pathMappings[$mountName]) ){
-			
+			$m=['driver'=>$ProtocolDomainsMappingStream, 'paths' => \array_values($pathMappings[$mountName]), 'scheme'=>$scheme, 'host' => $mountName];  
 		}elseif(isset($pathMappings['*']) ){
-			
+			$m=['driver'=>$ProtocolDomainsMappingStream, 'paths' => \array_values($pathMappings['*']), 'scheme'=>$scheme, 'host' => '*'];  
 		}
+		  $mounts[]=$m;  
 	  }
+	   
+	   return $mounts;
     }
 	
 	
@@ -83,28 +86,25 @@ class Manager extends AbstractManager
 	    $stages = [];
 		
 	    foerach(self::$mounts as $scheme => $mount){
-		 if(!is_null($protocol) && $protocol !== $scheme){
-		   conbtinue;	 
+		 if(!\is_null($protocol) && $protocol !== $scheme){
+		   continue;	 
 		 }
 		    
 		foreach($mount as $name => $streams){
 		    // self::driver_object($scheme, $name)	
-		    !isset($stages[$name]) && $stages[$name] = [];
-		    !isset($stages[$name][$scheme]) && $stages[$name][$scheme] = [];	
+		    //!isset($stages[$name]) && $stages[$name] = [];
+		    //!isset($stages[$name][$scheme]) && $stages[$name][$scheme] = [];	
 			
 		  //  $stages[$name][$scheme] = array_merge($stages[$name][$scheme], $streams);	
-			if(!in_array($stages[$name][$scheme], $streams)){
-				$stages[$name][$scheme][]= $streams;
-			}
+			//if(!in_array($stages, $streams)){
+				//$stages[$name][]= $streams;
+				$stages[]=['driver'=>$streams, 'paths' => [], 'scheme'=>$scheme, 'host' => $name];  
+			//}
 		}
 	    }
 		
 		
-	  if(null===$stage){
-		  return $stages;	
-	  }
-		
-	    return $stages[$stage];	
+	  return $stages;
 	}
 	
 	
