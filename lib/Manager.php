@@ -3,6 +3,8 @@ namespace frdl\mount;
 
 use frdl\mount\Driver;
 use DeGraciaMathieu\Manager\Manager as AbstractManager;
+use Nijens\ProtocolStream\StreamManager;
+use frdl\mount\driver\Mapping;
 
 class Manager extends AbstractManager
 {
