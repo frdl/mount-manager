@@ -74,30 +74,14 @@ class Mapping extends Delegate
 					       }
 		   );	
 		}
-		$this->options->set('${self.config}.map', $mappings);
+		$this->options->set('${self}.config.map', $mappings);
 		
 	  return $this;	
 	}
-	/*
-	new StreamMapping(string $protocol, bool $writable, DNS $mountDNS, callable $callback = null)
-
-new DNS(DomainMount... $entries) 
-
-new DomainMount(string $host = '', string $location = '') 
-*/
+	
 	public static function getOptions() :array{
 	  return [
-    /*
-  	      [	  
-	        'key' => 'namespace', 		  
-		'required' => false,  
-                'default' => 'web+fan:web+config:web+mapping-stages',
-		'type' => function(string $i){
-		      return \is_string($i);
-		},
-		'hint' => 'Namespace/Protocol(-transport) Scheme-Prefix.';     
-	      ],  
-    */
+    
     
 	      [	  
 	        'key' => 'protocol-domain-mappings', 		  
