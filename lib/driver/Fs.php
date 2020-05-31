@@ -14,7 +14,10 @@ use frdl\ContextContainer;
  * This is a local filesystem magic driver, it is mainly meant as an example even though it can
  * be used to simulate symbolic links.
  */
-class Fs implements Driver
+
+use frdl\mount\DriverInterface;
+
+class Fs extends Driver implements DriverInterface
 	{
 	protected $options=[];
 	protected $directory;
