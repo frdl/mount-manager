@@ -53,7 +53,7 @@ public function getTargetStreamWrapper($method, $arguments) :\stdclass{
       [	  
 	  'key' => 'target', 		  
 		'required' => false,  
-                'default' => null,
+                'default' => 'file://localhost',
 		'type' => function(&$i){
 		     if(\is_string($i)){
 			$i = Manager::getInstance()->getMountsByPath($i);
