@@ -11,7 +11,7 @@ use Nijens\ProtocolStream\StreamManager;
 
 use frdl\mount\DriverInterface;
 
-class Delegate implements DriverInterface
+class Delegate extends Driver
 {
     protected $options;	
     protected static $StreamManager = null;
