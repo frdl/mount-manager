@@ -43,6 +43,8 @@ class Mapping extends Delegate
 		$this->options['mappings']->add($this->options['protocol-domain-mappings']);
 		
 	  // $this->namespace = $this->options['namespace'];
+		
+		$this->init();
 	}
 
 	
@@ -70,7 +72,7 @@ class Mapping extends Delegate
 									$Writable
 								       );
 
-                                                    Mapping::$StreamManager->registerStream($stream);
+                                                    StreamManager::create()->registerStream($stream);
 					       }
 		   );	
 		}
@@ -80,7 +82,7 @@ class Mapping extends Delegate
 	}
 	
 	public static function getOptions() :array{
-	  return [
+	  return array_merge(parent::getOptions(), [
     
     
 	      [	  
@@ -103,7 +105,7 @@ class Mapping extends Delegate
 		},
 		'hint' => 'Mapping of an ArrayOf([scheme://][domain]) to local locations or delegating streams.';     
 	      ],        
-	  ];
+	  ]);
 	}
 	
 	/*
