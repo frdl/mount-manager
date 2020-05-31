@@ -13,25 +13,35 @@ use Nijens\ProtocolStream\StreamManager;
 use frdl\mount\DriverInterface;
 
 use bovigo\vfs\vfsStream;
-
+use bovigo\vfs\vfsStreamDirectory;
 
 class Virtual extends Delegate
 {
     protected $options;	
     protected static $StreamManager = null;
     protected static $MountManager = null;
+    protected $vfsStreamDirectory = null;
 	
 	
   public function __construct($options){     
     parent::__construct($options);
 	    
-    vfsStream::setup(
+   $this->rootDirectory(vfsStream::setup(
          '~',
          755,
         $this->options['fs.virtual.structure']
-    );
+    ));
 	  
 	  
+ }
+	
+ protected function rootDirectory(vfsStreamDirectory $dir = null) :vfsStreamDirectory 
+ {
+	 if(\!is_null($dir)){
+	    $this->vfsStreamDirectory = $dir;	 
+	 }
+	 
+   return $this->vfsStreamDirectory;	 
  }
 
 public function getTargetStreamWrapper($method, $arguments) :\stdclass{
