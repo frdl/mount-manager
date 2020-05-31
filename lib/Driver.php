@@ -10,7 +10,7 @@ abstract class Driver implements DriverInterface
 	
 	 protected $shouldBeSingleton = false;
 	
-	 public function singleton(bool $is = null){
+	 public function singleton(bool $is = null) :bool{
 		 if(\is_bool($is)){
 		    $this->shouldBeSingleton=$is;	 
 		 }
