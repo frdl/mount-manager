@@ -74,13 +74,13 @@ class Manager extends AbstractManager
 		$pathMappings = $ProtocolDomainsMappingStream->getPaths();  
 	        if(isset($pathMappings[$mountName]) ){
 			$m=['driver'=>$this->driver('mapping'),
-			     'paths' => \array_values($pathMappings[$mountName]), 
+			     'paths' => $pathMappings[$mountName], 
 			    'scheme'=>$scheme, 
 			    'host' => $mountName, 
 			    'hostType' => 'domain'];  
 		}elseif(isset($pathMappings['*']) ){
 			$m=['driver'=>$this->driver('mapping'), 
-			    'paths' => \array_values($pathMappings['*']),
+			    'paths' => $pathMappings['*'],
 			    'scheme'=>$scheme, 
 			    'host' => '*', 
 			    'hostType' => 'domain'];  
