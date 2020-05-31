@@ -58,7 +58,7 @@ public function getTargetStreamWrapper($method, $arguments) :\stdclass{
 			$i = $i['driver'];    
 		    }	
 			
-		    reeturn \is_object($i) && ($i instanceof Driver || \is_callable([$i, 'stream_open']));	
+		    return \is_object($i) && ($i instanceof Driver || \is_callable([$i, 'stream_open']));	
 		},
 		'hint' => 'Delegate this StreamWrapper to another target StreamWrapper.';     
 	      ],  
