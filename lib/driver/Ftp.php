@@ -17,8 +17,10 @@ use frdl\ContextContainer;
  * were on the local system. The driver implements as many file system features as the PHP FTP
  * extension permits.
  */
-class Ftp implements Driver
-	{
+use frdl\mount\DriverInterface;
+
+class Ftp extends Driver implements DriverInterface
+{
 	protected $control_connection;
 	protected $resources = [];
 	protected $directories = [];
