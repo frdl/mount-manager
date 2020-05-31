@@ -61,7 +61,17 @@ public function getTargetStreamWrapper($method, $arguments) :\stdclass{
 	
 	public static function getOptions() :array{
 	  return [
+       [	  
+	  'key' => 'directory', 		  
+		'required' => false,  
+                'default' => null,
+		'type' => function(string $i = null){
+                     return \is_null($i) || (\is_string($i) && \is_dir($i)  );	
+		},
+		'hint' => 'Real Physical Filesystem Directory Mounting (optional).';     
+	      ],  
     
+       
   	  
       [	  
 	  'key' => 'target', 		  
@@ -69,7 +79,7 @@ public function getTargetStreamWrapper($method, $arguments) :\stdclass{
                 'default' => 'vfs://',
 		'type' => function(&$i){
          if('vfs://'===$i){
-         
+            return true;
          }
     
     
