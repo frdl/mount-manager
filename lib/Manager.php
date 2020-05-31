@@ -293,40 +293,6 @@ class Manager extends AbstractManager
 		}	
 		
 		return self::mounted($scheme, $name);
-		
-		/*
-		$class = isset(self::$drivers[$type]) ? self::$drivers[$type] : __NAMESPACE__.'\\driver\\'.\ucfirst($type);
-		
-		if (class_exists($class)){
-			if (is_subclass_of($class, __NAMESPACE__.'\\Driver'))
-				{
-				
-				   try{
-					if(true!== ($validation=self::validateOptions($class, $options))   ){
-					   throw new Exception((string)$validation);	
-					}
-				   }catch(\Exception $e){		
-					   throw new Exception("Could not mount '".$scheme.'://'.$name."': ".$e->getMessage(),102);		 
-					   return false;						   
-				   }
-				
-				
-						if(!isset(self::$mounts[$scheme])){			  
-							self::$mounts[$scheme] = [];			
-						}
-		
-				
-				self::$mounts[$scheme][$name] = new $class($options);
-				// if (!self::$mounts[$name]->success())
-				// 	throw new Exception("Could not mount '".$name."'.",102);
-				return true;
-				}
-			}
-		
-	
-		throw new Exception("Could not mount '".$scheme.'://'.$name."', the driver does not exist or is invalid.",102);
-		 return false;	
-		 */
 	}
 
 	public static function validateOptions($class, array &$options){
