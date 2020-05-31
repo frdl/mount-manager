@@ -6,6 +6,8 @@ use frdl\mount\Manager;
 use frdl\mount\Exception;
 use frdl\mount\Driver;
 
+use frdl\ContextContainer;
+
 /**
  * MagicMounter, by Marvin Janssen (http://marvinjanssen.me), released in 2017.
  * 
