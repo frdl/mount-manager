@@ -19,7 +19,7 @@ return [
 	Manager::class => function(ContainerInterface $c){
                  $Manager = Manager::getInstance('web+fan', 'test');
 		
-		forach($c->get('config.managers.mounting' ) as $mount){
+		foreach($c->get('config.managers.mounting' ) as $mount){
 			$Manager::mount($mount['scheme'],
 					$mount['name'],
 					$mount['type'],
