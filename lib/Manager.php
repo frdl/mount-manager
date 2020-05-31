@@ -65,7 +65,7 @@ class Manager extends AbstractManager
 	   
 	   $driver = self::driver_object($scheme, $mountName);
 	  if($driver && $driver instanceof Driver){
-		$mounts[]=['driver'=>$driver, 'paths' => ['/'], 'scheme'=>$scheme, 'host' => $mountName];  
+		$mounts[]=['driver'=>$driver, 'paths' => [], 'scheme'=>$scheme, 'host' => $mountName, 'hostType' => 'domain'];  
 	  }
 	   
 	   
@@ -76,12 +76,14 @@ class Manager extends AbstractManager
 			$m=['driver'=>$this->driver('mapping'),
 			     'paths' => \array_values($pathMappings[$mountName]), 
 			    'scheme'=>$scheme, 
-			    'host' => $mountName];  
+			    'host' => $mountName, 
+			    'hostType' => 'domain'];  
 		}elseif(isset($pathMappings['*']) ){
 			$m=['driver'=>$this->driver('mapping'), 
 			    'paths' => \array_values($pathMappings['*']),
 			    'scheme'=>$scheme, 
-			    'host' => '*'];  
+			    'host' => '*', 
+			    'hostType' => 'domain'];  
 		}
 		  $mounts[]=$m;  
 	  }
@@ -98,16 +100,13 @@ class Manager extends AbstractManager
 		   continue;	 
 		 }
 		    
-		foreach($mount as $name => $streams){
-		    // self::driver_object($scheme, $name)	
-		    //!isset($stages[$name]) && $stages[$name] = [];
-		    //!isset($stages[$name][$scheme]) && $stages[$name][$scheme] = [];	
+		foreach($mount as $name => $stream){
+				
+			if(!\is_null($stage) && $stage !== $name){		   
+				continue;	 		
+			}
+				$stages[]=['driver'=>$stream, 'paths' => [], 'scheme'=>$scheme, 'host' => $name, 'hostType' => 'stage'];  
 			
-		  //  $stages[$name][$scheme] = array_merge($stages[$name][$scheme], $streams);	
-			//if(!in_array($stages, $streams)){
-				//$stages[$name][]= $streams;
-				$stages[]=['driver'=>$streams, 'paths' => [], 'scheme'=>$scheme, 'host' => $name];  
-			//}
 		}
 	    }
 		
