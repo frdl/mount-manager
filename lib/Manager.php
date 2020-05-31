@@ -49,6 +49,27 @@ class Manager extends AbstractManager
 	   return self::$instance;	
 	}
 	
+	public function getMountsByStage(string $stage=null){
+	    $stages = [];
+		
+	    foerach(self::$mounts as $scheme => $mount){
+		foreach($mount as $name => $streams){
+		    // self::driver_object($scheme, $name)	
+		    !isset($stages[$name]) && $stages[$name] = [];
+		    !isset($stages[$name][$scheme]) && $stages[$name][$scheme] = [];	
+			
+		    $stages[$name][$scheme] = array_merge($stages[$name][$scheme], $streams);	
+		}
+	    }
+		
+		
+	  if(null===$stage){
+		  return $stages;	
+	  }
+		
+	    return $stages[$stage];	
+	}
+	
 	
 	public function __construct($scheme=null, $mount=null){
 		
