@@ -33,7 +33,7 @@ final class StreamMapping extends \ArrayIterator
     if(!is_callable($this->callback)){
 	return $value;    
     }
-    return call_user_func($this->callback, [$value, $this->protocol, $this->writable]);
+    return call_user_func_array($this->callback, [$value, $this->protocol, $this->writable]);
   } 	
 	
 
