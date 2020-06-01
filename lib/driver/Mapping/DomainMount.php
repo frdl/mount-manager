@@ -10,13 +10,14 @@ use steevanb\PhpTypedArray\{
 
 use Symfony\Component\String\CodePointString;
 
-final class DomainMount extends CodePointStringArray
+final class DomainMount /*  extends CodePointStringArray */
 {
 	   
     public function __construct(string $host = '', string $location = '')
     {
-        parent::__construct([$host, $location], CodePointString::class);
-	if(2!==$this->count()){
+      //  parent::__construct([$host, $location], string);
+		$this->values=[$host,$location];
+	if(2!==count($this->values)){
 	  throw new \Exception('Invalid array count (key,value=2 required) in '.__METHOID__);	
 	}
     }
@@ -36,4 +37,3 @@ final class DomainMount extends CodePointStringArray
     }
 	
 }
-
