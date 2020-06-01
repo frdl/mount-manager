@@ -76,7 +76,7 @@ public static function getOptions() :array{
 		'type' => function(string $i){		
 		    return \is_string($i);	
 		},
-		'hint' => 'Mounted stage.';     
+		'hint' => 'Mounted stage.',    
 	      ],  
     
      
@@ -88,7 +88,7 @@ public static function getOptions() :array{
 		'type' => function(string $i = null){
                      return \is_null($i) || (\is_string($i) && \is_dir($i)  );	
 		},
-		'hint' => 'Mounted stage.';     
+		'hint' => 'Mounted stage.',   
 	      ],  
     
     
