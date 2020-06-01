@@ -40,8 +40,8 @@ class Mapping extends Delegate
 			;
 		
 		
+	//	$this->options['mappings']->add($this->options['protocol-domain-mappings']);
 		$this->options['mappings'] = array_merge($this->options['mappings'], $this->options['protocol-domain-mappings']);
-		
 	 
 		
 		$this->init();
@@ -57,8 +57,10 @@ class Mapping extends Delegate
 		$mappings = [];
 		foreach($this->options['mappings'] as $scheme => $map){	
 		    	$mountDNS=[];
-			foreach($map['DNS'] as $domain => $path){			
-				$mountDNS[]=new DomainMount($domain, $path);		
+			foreach($map['DNS'] as $domain => $path){
+				$mountDNS[]=(is_object($path) && $path instanceof DomainMount)
+					? $path
+					: new DomainMount($domain, $path);		
 			}
 			
 		  $DNS = new DNS($mountDNS);
@@ -109,7 +111,7 @@ class Mapping extends Delegate
 		'type' => function(array $i){
 		      return \is_array($i);
 		},
-		'hint' => 'Mapping of an ArrayOf([scheme://][domain]) to local locations or delegating streams.',    
+		'hint' => 'Mapping of an ArrayOf([scheme://][domain]) to local locations or delegating streams.',     
 	      ],
         
         
