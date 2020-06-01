@@ -41,7 +41,7 @@ class Virtual extends Delegate
 	
  protected function rootDirectory(vfsStreamDirectory $dir = null) :vfsStreamDirectory 
  {
-	 if(\!is_null($dir)){
+	 if(!is_null($dir)){
 	    $this->vfsStreamDirectory = $dir;	 
 	 }
 	 
@@ -73,7 +73,7 @@ public function getTargetStreamWrapper($method, $arguments) :\stdclass{
 		'type' => function(string $i = null){
                      return \is_null($i) || \is_string($i) ;	
 		},
-		'hint' => 'Root: The Virtual FS HOME Directory.';     
+		'hint' => 'Root: The Virtual FS HOME Directory.',     
 	      ],  
     
 		  
@@ -85,7 +85,7 @@ public function getTargetStreamWrapper($method, $arguments) :\stdclass{
 		'type' => function(array $i = null){
                      return \is_array($i);	
 		},
-		'hint' => 'Abstract Filesystem Structure and Contents AsArray (optional).';     
+		'hint' => 'Abstract Filesystem Structure and Contents AsArray (optional).',     
 	      ], 
 		  
 		  
@@ -96,7 +96,7 @@ public function getTargetStreamWrapper($method, $arguments) :\stdclass{
 		'type' => function(string $i = null){
                      return \is_null($i) || (\is_string($i) && \is_dir($i)  );	
 		},
-		'hint' => 'Real Physical Filesystem Directory Mounting (optional).';     
+		'hint' => 'Real Physical Filesystem Directory Mounting (optional).',     
 	      ],  
     
        
@@ -126,7 +126,7 @@ public function getTargetStreamWrapper($method, $arguments) :\stdclass{
 			
 		    return \is_object($i) && ($i instanceof Driver || \is_callable([$i, 'stream_open']));	
 		},
-		'hint' => 'Delegate this StreamWrapper to another target StreamWrapper.';     
+		'hint' => 'Delegate this StreamWrapper to another target StreamWrapper.',    
 	      ],  
     
     
