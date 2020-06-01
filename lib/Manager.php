@@ -179,7 +179,7 @@ foreach($mounts as $mount){
 		}		
 		
 		
-		if (!is_null($this->scheme) && !is_null($this->mountName) && self::mounted($this->scheme, $this->mountName)){		
+		if (!is_null($this->scheme) && !is_null($this->mountName) && self::mounted($this->scheme, $this->mountName)){				
 			$this->driver = new Repository(self::driver_object($this->scheme, $this->mountName));	
 		}
 	
@@ -241,7 +241,7 @@ foreach($mounts as $mount){
     {
 	if('driver'===$method){
 	    return $this->iDriver(...$parameters);
-	}elseif(\preg_match("/^create([A-Z][.*]+)Driver$/", $method, $matches)    ){
+	}elseif(\preg_match("/^create([A-Z][A-Za-z]+)Driver$/", $method, $matches)    ){
 	  $type = \strtolower($matches[1]);
 	  \array_unshift($parameters, $type);	
 	  if(1>=count($parameters))\array_unshift($parameters, []);
