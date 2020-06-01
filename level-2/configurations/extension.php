@@ -52,7 +52,12 @@ return [
 
 
  'stages' => [
- 
+      'init',
+      'workspace',	 
+      'dev',	 
+      'green',
+      'blue',
+      'proxy',	 
  ],
 
 
