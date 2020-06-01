@@ -12,9 +12,9 @@ use Nijens\ProtocolStream\StreamManager;
 
 use frdl\mount\DriverInterface;
 
-use bovigo\vfs\vfsStream;
-use bovigo\vfs\vfsStreamDirectory;
-use bovigo\vfs\vfsStreamWrapper;
+use org\bovigo\vfs\vfsStream;
+use org\bovigo\vfs\vfsStreamDirectory;
+use org\bovigo\vfs\vfsStreamWrapper;
 
 class Virtual extends Delegate
 {
