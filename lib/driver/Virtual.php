@@ -104,7 +104,7 @@ public function getTargetStreamWrapper($method, $arguments) :\stdclass{
       [	  
 	  'key' => 'target', 		  
 		'required' => false,  
-                'default' => 'vfs://',
+                'default' =>  vfsStreamWrapper::class,
 		'type' => function(&$i){
          if('vfs://'===$i){
             return true;
