@@ -60,7 +60,7 @@ class Manager extends AbstractManager
    public static function getMappings(string $name=null, string $scheme=null){
 	$mappings = [];
 $mounts = array_merge(\frdl\mount\Manager::getInstance($scheme, $name)
-   ->getMountsByPath(string $path),
+   ->getMountsByPath( $path),
 
  \frdl\mount\Manager::getInstance($scheme, $name)
    ->getMountsByStage($name, $scheme)
@@ -125,7 +125,7 @@ foreach($mounts as $mount){
 	public function getMountsByStage(string $stage=null, string $protocol=null){
 	    $stages = [];
 		
-	    foerach(self::$mounts as $scheme => $mount){
+	    foreach(self::$mounts as $scheme => $mount){
 		 if(!\is_null($protocol) && $protocol !== $scheme){
 		   continue;	 
 		 }
@@ -179,7 +179,7 @@ foreach($mounts as $mount){
 		}		
 		
 		
-		if (!is_null($this->scheme) && !is_null($this->mountName)){		
+		if (!is_null($this->scheme) && !is_null($this->mountName) && self::mounted($this->scheme, $this->mountName)){		
 			$this->driver = new Repository(self::driver_object($this->scheme, $this->mountName));	
 		}
 	
