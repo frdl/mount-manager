@@ -40,7 +40,7 @@ class Mapping extends Delegate
 			;
 		
 		
-		$this->options['mappings']->add($this->options['protocol-domain-mappings']);
+		$this->options['mappings'] = array_merge($this->options['mappings'], $this->options['protocol-domain-mappings']);
 		
 	 
 		
@@ -109,7 +109,7 @@ class Mapping extends Delegate
 		'type' => function(array $i){
 		      return \is_array($i);
 		},
-		'hint' => 'Mapping of an ArrayOf([scheme://][domain]) to local locations or delegating streams.';     
+		'hint' => 'Mapping of an ArrayOf([scheme://][domain]) to local locations or delegating streams.',    
 	      ],
         
         
@@ -120,7 +120,7 @@ class Mapping extends Delegate
 		'type' => function(array $i){
 		      return \is_array($i);
 		},
-		'hint' => 'Mapping of an ArrayOf([scheme://][domain]) to local locations or delegating streams.';     
+		'hint' => 'Mapping of an ArrayOf([scheme://][domain]) to local locations or delegating streams.',    
 	      ],        
 	  ]);
 	}
