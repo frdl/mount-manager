@@ -11,7 +11,7 @@ final class StreamMapping extends \ArrayIterator
    protected $writable;	
    protected $values = [];	
 	
-   public function __construct(string $protocol, bool $writable, DNS $mountDNS, callable $callback = null){
+   public function __construct(string $protocol,  $writable, DNS $mountDNS, callable $callback = null){
 	   $this->callback=$callback;
 	   $this->protocol = $protocol;
 	   $this->writable = $writable;
@@ -22,7 +22,7 @@ final class StreamMapping extends \ArrayIterator
    }
 	
 	
-  public function createMapping(string $protocol,bool $writable=true, DomainMount... $entries){
+  public function createMapping(string $protocol, $writable=true, ... $entries){
 	    while ($mount = array_shift($entries)) {  
 	        yield $mount; 
 	    }
