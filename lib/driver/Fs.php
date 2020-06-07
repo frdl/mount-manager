@@ -54,7 +54,7 @@ class Fs extends Driver implements DriverInterface
 			 return true;    
 		     }
 		},
-		'hint' => 'A (relative or absolute) path to a local directory.';     
+		'hint' => 'A (relative or absolute) path to a local directory.',     
 	      ],
 	  ];
 	}
