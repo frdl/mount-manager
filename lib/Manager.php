@@ -48,7 +48,7 @@ class Manager extends AbstractManager
 		   self::$instance = new self($scheme, $mount);	
 		}		
 		
-	  if (!is_null($scheme) && !is_null($mount)){
+	  if (!is_null($scheme) && !is_null($mount) && self::mounted($scheme, $mount)){
 		self::$instance->driver = new Repository(self::driver_object($scheme, $mount));
 	  }
 		
