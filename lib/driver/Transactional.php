@@ -1,31 +1,34 @@
 <?php
 
-declare(strict_types=1);
-
 namespace frdl\mount\driver;
 /*
  * (c) Andrey F. Mindubaev <covex.mobile@gmail.com>
 
            - (c) edited by frdlweb
- */
 
+*/
 use Covex\Stream;
-use Covex\Stream\Exception;
-use Covex\Stream\Entity;
-use Covex\Stream\Partition;
-use Covex\Stream\Filesystem;
+
+
+use Covex\Stream\FileSystem;
 use Covex\Stream\Changes;
+
+
 
 
 use Covex\Stream\File\Entity;
 use Covex\Stream\File\EntityInterface;
 
-use frdl\mount\Driver;
+use Covex\Stream\Partition;
+
 use frdl\mount\Manager;
 
 use frdl\mount\DriverInterface;
+use frdl\mount\Exception;
 
-class Transactional extends Driver implements DriverInterface
+
+
+class Transactional extends \frdl\mount\driver\Delegate
 {
     /**
      * @var Partition[]
@@ -56,26 +59,35 @@ class Transactional extends Driver implements DriverInterface
          $this->options=array_merge([
                         'scheme' => 'frdl',
                         'directory' => null,
+			   
                     ], $opts);        
                
                
-               if(count($opts)>0){
-                     call_user_fucn_array(self::class.'::register', [
+	
+		 $this->options['target'] = new FileSystem;
+		
+		
+		
+               if(count($this->options)>0){
+                     call_user_func_array([$this, 'register'], [
                                    $this->options['scheme'],
                                    $this->options['directory']
                                 ]);        
                }
+			  
     }
 
+	
+	
 public static function getOptions() :array{
 	  return [
          [	  
 	  'key' => 'scheme', 		  
 		'required' => true,  
                 'default' => 'frdl',
-		'type' => function(string $i){		
-		    return \is_string($i);	
-		},
+		'type' => (function(string $i){		
+		    return is_string($i);	
+		}),
 		'hint' => 'Mounted stage.',    
 	      ],  
     
@@ -85,9 +97,9 @@ public static function getOptions() :array{
 	  'key' => 'directory', 		  
 		'required' => false,  
                 'default' => null,
-		'type' => function(string $i = null){
-                     return \is_null($i) || (\is_string($i) && \is_dir($i)  );	
-		},
+		'type' => (function(string $i = null){
+                     return is_null($i) || (is_string($i) && is_dir($i)  );	
+		}),
 		'hint' => 'Mounted stage.',   
 	      ],  
     
@@ -95,18 +107,34 @@ public static function getOptions() :array{
 	  
 	  ];
      }           
-   /**
-     * Register stream wrapper.
-     */
-    public static function register(string $protocol, string $root = null, int $flags = 0): bool
+  
+ 
+    public function register(string $protocol, string $root = null, int $flags = 0)
     {
+		
+		$class = get_class($this->options['target']);
+		$class::register( $protocol,  $root,  $flags);
+		
+		/*
         $wrappers = stream_get_wrappers();
+        if (in_array($protocol, $wrappers) && isset(self::$partitions[$protocol]) && self::$partitions[$protocol] instanceof Partition) {
+           stream_wrapper_unregister($protocol); 
+			Manager::unmount($scheme, $name);
+        }
+		
+	 
+		$wrappers = stream_get_wrappers();
         if (in_array($protocol, $wrappers)) {
             throw new Exception(
-                "Protocol '$protocol' has been already registered"
+                "Protocol '$protocol' has been registered already"
             );
-        }
-        $wrapper = stream_wrapper_register($protocol, get_called_class(), $flags);
+        }	
+	
+		
+		
+		
+		
+        $wrapper = stream_wrapper_register($protocol, get_class($this->options['target']), $flags);
 
         if ($wrapper) {
             if (null !== $root) {
@@ -121,11 +149,10 @@ public static function getOptions() :array{
         }
 
         return $wrapper;
+		*/
     }
 
-    /**
-     * Commit all changes to real FS.
-     */
+
     public static function commit(string $protocol): bool
     {
         if (isset(self::$partitions[$protocol])) {
@@ -139,9 +166,7 @@ public static function getOptions() :array{
         return $result;
     }
 
-    /**
-     * Unregister stream wrapper.
-     */
+
     public static function unregister(string $protocol): bool
     {
         unset(self::$partitions[$protocol]);
@@ -156,9 +181,7 @@ public static function getOptions() :array{
         return stream_wrapper_unregister($protocol);
     }
 
-    /**
-     * Get relative path of an url.
-     */
+
     public static function getRelativePath(string $url): string
     {
         $urlParts = explode('://', $url);
@@ -168,80 +191,84 @@ public static function getOptions() :array{
         return Entity::fixPath($urlPath);
     }
 
-    /**
-     * Get partition by file url.
-     */
-    protected static function getPartition(string $url): ?Partition
+
+    public static function getPartition(string $url): ?Partition
     {
         $urlParts = explode('://', $url);
         $protocol = array_shift($urlParts);
 
         return self::$partitions[$protocol] ?? null;
     }
+  /*       */   
            
            
-           
-           
-           
-    /**
-     * Retrieve information about a file.
-     *
-     * @return array|bool
-     */
-    public function url_stat(string $url, int $flags,Manager $magic_stream = null)
+          
+  /*           
+  
+    public function url_stat(array  $path_info,  $flags,Manager $magic_stream = null)
     {
+		$url = Manager::unparse_url($path_info);
         $partition = static::getPartition($url);
         $path = static::getRelativePath($url);
 
         return $partition->getStat($path, $flags);
     }
 
-    /**
-     * Create a directory. This method is called in response to mkdir().
-     *
-     * @see http://www.php.net/manual/en/streamwrapper.mkdir.php
-     */
-    public function mkdir(string $url, int $mode, int $options,Manager $magic_stream = null): bool
+	
+	
+
+    public function stream_open(array $url,$mode,$options,&$opened_path,Manager $magic_stream)
     {
+		//$url = Manager::unparse_url($path_info);
+        $partition = self::getPartition($url);
+        $path = self::getRelativePath($url);
+
+        $this->filePointer = $partition->fileOpen(
+            $path, $mode, $options
+        );
+
+        $result = (bool) $this->filePointer;
+        if ($result && ($options & STREAM_USE_PATH)) {
+            $openedPath = $path;
+        }
+
+        return $result;
+    }
+	
+
+    public function mkdir(array  $path_info, int $mode, int $options,Manager $magic_stream = null)
+    {
+		$url = Manager::unparse_url($path_info);
         $partition = self::getPartition($url);
         $path = self::getRelativePath($url);
 
         return (bool) $partition->makeDirectory($path, $mode, $options);
     }
 
-    /**
-     * Removes a directory. This method is called in response to rmdir().
-     *
-     * @see http://www.php.net/manual/en/streamwrapper.rmdir.php
-     */
-    public function rmdir(string $url, int $options,Manager $magic_stream = null): bool
+  
+    public function rmdir(array  $path_info, int $options,Manager $magic_stream = null)
     {
+		$url = Manager::unparse_url($path_info);
         $partition = self::getPartition($url);
         $path = self::getRelativePath($url);
 
         return (bool) $partition->removeDirectory($path, $options);
     }
 
-    /**
-     * Delete a file. This method is called in response to unlink().
-     *
-     * @see http://www.php.net/manual/en/streamwrapper.unlink.php
-     */
-    public function unlink(string $url,Manager $magic_stream = null): bool
+ 
+    public function unlink(array  $path_info,Manager $magic_stream = null)
     {
+		$url = Manager::unparse_url($path_info);
         $partition = self::getPartition($url);
         $path = self::getRelativePath($url);
 
         return (bool) $partition->deleteFile($path);
     }
 
-    /**
-     * Rename a file or directory.
-     *
-     * @see http://www.php.net/manual/en/streamwrapper.rename.php
-     */
-    public function rename(string $srcPath, string $dstPath,Manager $magic_stream = null): bool
+   
+    public function rename(array  $path_info, string $dstPath,Manager $magic_stream = null)
     {
+		$srcPath = Manager::unparse_url($path_info);
         $partition = self::getPartition($srcPath);
 
         $srcRelativePath = self::getRelativePath($srcPath);
@@ -250,13 +277,10 @@ public static function getOptions() :array{
         return (bool) $partition->rename($srcRelativePath, $dstRelativePath);
     }
 
-    /**
-     * Open directory handle. This method is called in response to opendir().
-     *
-     * @see http://www.php.net/manual/en/streamwrapper.dir-opendir.php
-     */
-    public function dir_opendir(string $url,Manager $magic_stream = null): bool
+  
+    public function dir_opendir(array  $path_info,Manager $magic_stream = null)
     {
+		$url = Manager::unparse_url($path_info);
         $partition = self::getPartition($url);
         $path = self::getRelativePath($url);
 
@@ -274,13 +298,7 @@ public static function getOptions() :array{
         return $result;
     }
 
-    /**
-     * Read entry from directory handle. This method is called in response to readdir().
-     *
-     * @return string|bool
-     *
-     * @see http://www.php.net/manual/en/streamwrapper.dir-readdir.php
-     */
+
     public function dir_readdir(Manager $magic_stream = null)
     {
         $value = current($this->dirFiles);
@@ -295,141 +313,75 @@ public static function getOptions() :array{
         return $result;
     }
 
-    /**
-     * Close directory handle. This method is called in response to closedir().
-     *
-     * @see http://www.php.net/manual/en/streamwrapper.dir-closedir.php
-     */
-    public function dir_closedir(Manager $magic_stream = null): bool
+
+    public function dir_closedir(Manager $magic_stream = null)
     {
         unset($this->dirFiles);
 
         return true;
     }
 
-    /**
-     * Rewind directory handle. This method is called in response to rewinddir().
-     *
-     * @see http://www.php.net/manual/en/streamwrapper.dir-rewinddir.php
-     */
-    public function dir_rewinddir(Manager $magic_stream = null): bool
+   
+    public function dir_rewinddir(Manager $magic_stream = null)
     {
         reset($this->dirFiles);
 
         return true;
     }
 
-    /**
-     * Opens file or URL. This method is called immediately after the wrapper is initialized.
-     *
-     * @see http://www.php.net/manual/en/streamwrapper.stream-open.php
-     */
-    public function stream_open(string $url, string $mode, int $options, ?string &$openedPath,Manager $magic_stream = null): bool
-    {
-        $partition = self::getPartition($url);
-        $path = self::getRelativePath($url);
 
-        $this->filePointer = $partition->fileOpen(
-            $path, $mode, $options
-        );
 
-        $result = (bool) $this->filePointer;
-        if ($result && ($options & STREAM_USE_PATH)) {
-            $openedPath = $path;
-        }
-
-        return $result;
-    }
-
-    /**
-     * Close an resource. This method is called in response to fclose().
-     *
-     * @see http://www.php.net/manual/en/streamwrapper.stream-close.php
-     */
-    public function stream_close(Manager $magic_stream = null): void
+    public function stream_close(Manager $magic_stream = null)
     {
         fclose($this->filePointer);
     }
 
-    /**
-     * Read from stream. This method is called in response to fread() and fgets().
-     *
-     * @see http://www.php.net/manual/en/streamwrapper.stream-read.php
-     */
-    public function stream_read(int $count,Manager $magic_stream = null): string
+ 
+    public function stream_read( $count,Manager $magic_stream = null)
     {
         return fread($this->filePointer, $count);
     }
 
-    /**
-     * Retrieve information about a file resource. This method is called in response to fstat().
-     *
-     * @see http://www.php.net/manual/en/streamwrapper.stream-stat.php
-     */
-    public function stream_stat(Manager $magic_stream = null): array
+ 
+    public function stream_stat(Manager $magic_stream = null)
     {
         return fstat($this->filePointer);
     }
 
-    /**
-     * Tests for end-of-file on a file pointer. This method is called in response to feof().
-     *
-     * @see http://www.php.net/manual/en/streamwrapper.stream-eof.php
-     */
-    public function stream_eof(Manager $magic_stream = null): bool
+  
+    public function stream_eof(Manager $magic_stream = null)
     {
         return feof($this->filePointer);
     }
 
-    /**
-     * Retrieve the current position of a stream. This method is called in response to ftell().
-     *
-     * @see http://www.php.net/manual/en/streamwrapper.stream-tell.php
-     */
-    public function stream_tell(Manager $magic_stream = null): int
+    
+    public function stream_tell(Manager $magic_stream = null)
     {
         return ftell($this->filePointer);
     }
 
-    /**
-     * Seeks to specific location in a stream. This method is called in response to fseek().
-     *
-     * @see http://www.php.net/manual/en/streamwrapper.stream-seek.php
-     */
-    public function stream_seek(int $offset, int $whence = SEEK_SET,Manager $magic_stream = null): bool
+   
+    public function stream_seek( $offset,  $whence = SEEK_SET,Manager $magic_stream = null)
     {
         return 0 === fseek($this->filePointer, $offset, $whence);
     }
 
-    /**
-     * Write to stream. This method is called in response to fwrite().
-     *
-     * @see http://www.php.net/manual/en/streamwrapper.stream-write.php
-     */
-    public function stream_write(string $data,Manager $magic_stream = null): int
+
+    public function stream_write( $data,Manager $magic_stream = null)
     {
         return fwrite($this->filePointer, $data);
     }
 
-    /**
-     * Flushes the output. This method is called in response to fflush().
-     *
-     * @see http://www.php.net/manual/en/streamwrapper.stream-flush.php
-     */
-    public function stream_flush(Manager $magic_stream = null): bool
+   
+    public function stream_flush(Manager $magic_stream = null)
     {
         return fflush($this->filePointer);
     }
 
-    /**
-     * Change stream metadata.
-     *
-     * @param mixed $value
-     *
-     * @see http://php.net/manual/ru/streamwrapper.stream-metadata.php
-     */
-    public function stream_metadata(string $url, int $option, $value,Manager $magic_stream = null): bool
+
+   public function stream_metadata(array $path_info,$option,$value,Manager $magic_stream)
     {
+	   $url = Manager::unparse_url($path_info);
         $partition = self::getPartition($url);
         $path = self::getRelativePath($url);
 
@@ -444,5 +396,5 @@ public static function getOptions() :array{
         return $result;
     }
 
- 
+   */
 }

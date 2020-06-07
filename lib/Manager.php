@@ -1,11 +1,13 @@
 <?php
 namespace frdl\mount;
 
+use frdl\mount\DriverInterface;
 use frdl\mount\Driver;
 use DeGraciaMathieu\Manager\Manager as AbstractManager;
 use Nijens\ProtocolStream\StreamManager;
 use frdl\mount\driver\Mapping;
 use frdl\mount\Repository;
+
 
 
 class Manager extends AbstractManager
@@ -55,7 +57,19 @@ class Manager extends AbstractManager
 	   return self::$instance;	
 	}
 	   
-	
+
+	public static function unparse_url($parsed_url) { 
+		$scheme   = isset($parsed_url['scheme']) ? $parsed_url['scheme'] . '://' : '';  
+		$host     = isset($parsed_url['host']) ? $parsed_url['host'] : '';  
+		$port     = isset($parsed_url['port']) ? ':' . $parsed_url['port'] : ''; 
+		$user     = isset($parsed_url['user']) ? $parsed_url['user'] : ''; 
+		$pass     = isset($parsed_url['pass']) ? ':' . $parsed_url['pass']  : ''; 
+		$pass     = ($user || $pass) ? "$pass@" : '';
+		$path     = isset($parsed_url['path']) ? $parsed_url['path'] : '';
+		$query    = isset($parsed_url['query']) ? '?' . $parsed_url['query'] : ''; 
+		$fragment = isset($parsed_url['fragment']) ? '#' . $parsed_url['fragment'] : ''; 
+		return "$scheme$user$pass$host$port$path$query$fragment";
+	} 	
 	
    public static function getMappings(string $name=null, string $scheme=null){
 	$mappings = [];
@@ -126,13 +140,13 @@ foreach($mounts as $mount){
 	    $stages = [];
 		
 	    foreach(self::$mounts as $scheme => $mount){
-		 if(!\is_null($protocol) && $protocol !== $scheme){
+		 if(!\is_null($protocol) && $protocol !== $scheme && '*' !== $scheme){
 		   continue;	 
 		 }
 		    
 		foreach($mount as $name => $stream){
 				
-			if(!\is_null($stage) && $stage !== $name){		   
+			if(!\is_null($stage) && $stage !== $name && '*' !== $name){		   
 				continue;	 		
 			}
 				$stages[]=['driver'=>$stream, 'paths' => [], 'scheme'=>$scheme, 'host' => $name, 'hostType' => 'stage'];  
@@ -197,11 +211,14 @@ foreach($mounts as $mount){
      */
     public function iDriver($type = null)
     {
+	
         $type = $type ?: self::getInstance()->getDefaultDriver();
 
         $driver = $this->load($type);
 
         return new Repository($driver, $type);
+	
+		/*	return self::getInstance()->registry($type);	*/
     }		
 	
 	
@@ -261,39 +278,58 @@ foreach($mounts as $mount){
 	$name = (count($parameters)) ? array_shift($parameters) : $this->mountName;
 	$scheme = (count($parameters)) ? array_shift($parameters) : $this->scheme;
 	
-	    
-	    
-	
 		
-		if ((!isset(self::$mounts[$scheme]) || !isset(self::$mounts[$scheme][$name]) )  && class_exists($class)){
-			if (is_subclass_of($class, __NAMESPACE__.'\\Driver'))
-				{
-				
+		
+		if ((!isset(self::$mounts[$scheme]) || !isset(self::$mounts[$scheme][$name])  || null ===self::$drivers[$type])  
+			 && class_exists($class)
+		//	 && is_subclass_of($class, DriverInterface::class)
+		 //    && in_array(DriverInterface::class, $class)
+		   ){
+
+    
+		
+			
+			
 				   try{
-					if(true!== ($validation=self::validateOptions($class, $options))   ){
+					  $validation=self::validateOptions($class, $options);
+					   
+					if(true!== $validation  ){
 					   throw new Exception((string)$validation);	
 					}
 				   }catch(\Exception $e){		
-					   throw new Exception("Could not mount '".$scheme.'://'.$name."': ".$e->getMessage(),102);		 
+					   throw new Exception("Could not mount '".$scheme.'://'.$name."': ".$e->getMessage());		 
 					   return null;						   
 				   }
 				
 				
+		
+			
+							
+				 try{
+					if(true===$validation){
+					   $driver = new Repository(new $class($options), $type);	
+					}
+				   }catch(\Exception $e){		
+					   throw new Exception("Could not mount '".$scheme.'://'.$name."': ".$e->getMessage());		 
+					   return null;						   
+				   }
+			
+				 	
+				
 						if(!isset(self::$mounts[$scheme])){			  
 							self::$mounts[$scheme] = [];			
 						}
-		
 				
-				 self::$mounts[$scheme][$name] = new Repository(new $class($options), $type);
+				 self::$mounts[$scheme][$name] = $driver;
 				// if (!self::$mounts[$name]->success())
 				// 	throw new Exception("Could not mount '".$name."'.",102);
 				//return true;
 				//  return self::driver_object($scheme, $name);
-				}
+			//	}
 			}
 	    
 	    
-	 return self::driver_object($scheme, $name);  
+	 return $driver;  
     }
 	
     public function getDefaultDriver(){
@@ -321,6 +357,9 @@ foreach($mounts as $mount){
     }
 
     public function createMappingDriver(array $opts = [], string $mountName = 'network', string $scheme = 'mapping'){
+		
+
+		
 	    $options = array_merge([
 	       'target' => $mountName.':'.$scheme.'://${self.host}/${path}',
 	       'mappings' => [
@@ -336,6 +375,33 @@ foreach($mounts as $mount){
 	return $driver;
     }
 	
+	
+	
+    public function createTransactionalDriver(array $opts = [], string $mountName = 'workspace', string $scheme = 'project'){
+		
+	
+		  $options = array_merge([
+	       'scheme' => $scheme,
+	       'directory' => getcwd(),
+	    ],$opts);
+		
+	    	//  $dir = $options['directory'] . \DIRECTORY_SEPARATOR.$mountName;
+		     $dir = $options['directory'];
+		    if(!is_dir($dir))mkdir($dir, 0755, true);
+		
+			
+	
+		$driver = $this->makeDriver('transactional', $options, $mountName, $options['scheme']);	   
+		$driver->singleton(false);		  
+		$driver->registry('transactional', $driver);
+	
+	
+		
+	  return $driver;
+    }
+	
+	
+	
     public static function init(){	
 	    	  
 	    if(null === self::$StreamManager){	
@@ -346,8 +412,7 @@ foreach($mounts as $mount){
 		if (!self::$started){
 			self::$started = true;			
 			
-			spl_autoload_register(self::class.'::autoload');			
-			//stream_wrapper_register(self::$wrapper,self::class,\STREAM_IS_URL);	
+			//spl_autoload_register(self::class.'::autoload');				
 			self::alias(self::$wrapper,\STREAM_IS_URL);	
 			
 			\class_alias(self::class, \MagicMounter\Magic::class);
@@ -362,9 +427,22 @@ foreach($mounts as $mount){
 	 * @param string $name
 	 * @return MagicMounter\Driver|false
 	 */
-	protected static function driver_object($scheme, $name){
+	public static function driver_object($scheme, $name){
 		$name = \strtolower($name);
-		return isset(self::$mounts[$scheme]) && isset(self::$mounts[$scheme][$name]) ? self::$mounts[$scheme][$name] : false;		
+		$r =  isset(self::$mounts[$scheme]) && isset(self::$mounts[$scheme][$name]) ? self::$mounts[$scheme][$name] 
+			//: (isset(self::$mounts[$scheme]) && isset(self::$mounts[$scheme]['*']) ? self::$mounts[$scheme]['*'] : false);	
+			: false;
+		
+		if(false===$r){
+			$r=isset(self::$mounts[$scheme]) && isset(self::$mounts[$scheme]['*']) ? self::$mounts[$scheme]['*'] : $r;
+		}		
+		
+		if(is_object($r) && $r instanceof Repository){
+			
+		}
+		
+	
+		return $r;
 	}
 
 
@@ -383,8 +461,8 @@ foreach($mounts as $mount){
 		$name = \strtolower($name);
 		
 		
-		if (!preg_match('/^[a-z0-9._-]+$/',$name))
-			throw new Exception("Invalid mount name '[".$scheme.'://]'.$name."'.",104);
+		if (!preg_match('/^[a-z0-9\.\_\-\+\*]+$/',$name))
+			throw new Exception("Invalid mount name '[".$scheme.'://<strong>'.$name."</strong>]'",104);
 		
 				
 		
@@ -393,22 +471,27 @@ foreach($mounts as $mount){
 			throw new Exception("Mount point '".$scheme.'://'.$name."' already exists.",101);
 		
 		
-		  if(!in_array($scheme, \stream_get_wrappers())) {  
-			self::alias($scheme);
-		  } 
-		
 
 			
 		try{				
-			self::getInstance($scheme, $name)			
+			self::$mounts[$scheme][$name] = self::getInstance($scheme, $name)			
 				->{'create'.\ucfirst($type).'Driver'}($options, $name, $scheme)		
-			;				 
+			;		
+			
+				
+		  if(!in_array($scheme, \stream_get_wrappers())) {  
+			self::alias($scheme);
+		  } 	
+
+
+					
+			
 		}catch(\Exception $e){					
 			throw new Exception("Could not mount '".$scheme.'://'.$name."': ".$e->getMessage(),102);			
 			return false;					
 		}	
 		
-		return self::mounted($scheme, $name);
+		return self::driver_object($scheme, $name);
 	}
 
 	public static function validateOptions($class, array &$options){
@@ -456,10 +539,10 @@ foreach($mounts as $mount){
 	 * @param string $name
 	 * @return bool
 	 */
-	public static function unmount($scheme, $name){
+	public static function unmount($scheme, string $name = null){
 		if ($driver = self::driver_object($scheme, $name))
 			{
-			unset(self::$mounts[$scheme][strtolower($name)]);
+			if (is_string($name))  {unset(self::$mounts[$scheme][strtolower($name)]); } else {unset(self::$mounts[$scheme]);}
 			return $driver->unmount();
 			}
 		return false; //TODO- throw exception		
@@ -488,8 +571,8 @@ foreach($mounts as $mount){
 			case 'wrapper':
 				if ($value === null)		
 					return self::$wrapper;
-				if (!preg_match('/^[a-z0-9.]+$/',$value))
-					throw new Exception('Illegal wrapper name, only a-z, 0-9, and dots are allowed.',2);
+				if (!preg_match('/^[a-z0-9\.\+]+$/',$value))
+					throw new Exception('Illegal wrapper name, only a-z, 0-9,+, and dots are allowed.',2);
 				$url_stream = !stream_is_local(self::$wrapper.'://');
 				//@stream_wrapper_unregister(self::$wrapper);
 				self::$wrapper = $value;
@@ -593,21 +676,24 @@ foreach($mounts as $mount){
 	 */
 	public static function autoload($class)
 		{
-		$class = \strtolower($class);
+	//	$class = \strtolower($class);
+		
+		
 		
 		if (\strpos($class,__NAMESPACE__.'\\driver\\',0) === 0){
-			$path = __DIR__.\DIRECTORY_SEPARATOR.'driver'.\DIRECTORY_SEPARATOR.\basename($class).'.php';
+			$path = __DIR__.\DIRECTORY_SEPARATOR.'driver'.\DIRECTORY_SEPARATOR.ucfirst(basename($class)).'.php';
 			if (!file_exists($path))
 				throw new Exception("Specified driver class '".$class."' does not exist.",1);
 			
-			require $path;			
+			return require_once $path;			
 		}elseif(\strpos($class,'\\MagicMounter\\driver\\',0) === 0){
-			$path = __DIR__.\DIRECTORY_SEPARATOR.'..'.\DIRECTORY_SEPARATOR.'src'.\DIRECTORY_SEPARATOR.'driver'.\DIRECTORY_SEPARATOR.\basename($class).'.php';
+			$path = __DIR__.\DIRECTORY_SEPARATOR.'..'.\DIRECTORY_SEPARATOR.'src'.\DIRECTORY_SEPARATOR.'driver'.\DIRECTORY_SEPARATOR.strtolower(basename($class)).'.php';
 			if (!file_exists($path))
 				throw new Exception("Specified driver class '".$class."' does not exist.",1);
 			
-			require $path;			
+			return require_once $path;			
 		}
+		
 		
 	}
 
@@ -619,14 +705,36 @@ foreach($mounts as $mount){
 	 */
 	public function stream_open($path,$mode,$options,&$opened_path)
 		{
+		 self::init();
+		
 		$path_info = \parse_url($path);
 		$this->scheme = $path_info['scheme'];
 		$this->mountName = $path_info['host'];
 		
-		if ($this->driver = self::driver_object($this->scheme, $this->mountName)){
+	//	
+		
+		$this->driver = self::driver_object($this->scheme, $this->mountName);
+		
+		if(!is_object($this->driver) || is_null($this->driver)){
+			if('*'!==$this->mountName){
+				$this->driver = self::driver_object($this->scheme, '*');
+			}
+		}
+		
+		if(!is_object($this->driver) || is_null($this->driver)){
+				$this->driver = self::$mounts[$this->scheme][$this->mountName];
+		}		
+		
+		if(!is_object($this->driver) || is_null($this->driver)){
+				$this->driver = self::$mounts[$this->scheme]['*'];
+		}				
+		
+		if(is_object($this->driver) && !is_null($this->driver)){
 			return $this->driver->stream_open($path_info,$mode,$options,$opened_path,$this);
 		}
 		
+			
+
 		  throw new Exception("Unknown mount '".$path_info['host']."'.",100);		
 	}
 
