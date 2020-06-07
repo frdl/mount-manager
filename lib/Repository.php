@@ -2,7 +2,7 @@
 
 namespace frdl\mount;
 
-use frdl\mount\Driver;
+use frdl\mount\DriverInterface;
 
 class Repository
 {
@@ -41,7 +41,7 @@ class Repository
     protected $driver;
     protected static $classNames = [];
     
-    public function __construct(Driver $driver,string $type = null)
+    public function __construct(DriverInterface $driver,string $type = null)
     {
         $this->driver = $driver;
         if(\is_string($type) && !isset(self::$classNames[$type])){
