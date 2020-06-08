@@ -3,6 +3,8 @@
 namespace frdl\mount;
 
 use frdl\mount\DriverInterface;
+use frdl\mount\Manager;
+
 
 class Repository
 {
@@ -32,6 +34,7 @@ class Repository
         'dir_closedir',
         'dir_readdir',
         'dir_rewinddir',
+        'commit',
                       
     ];
     const METHOD_MAP_STATIC = [
@@ -61,9 +64,10 @@ class Repository
     }
     
     public function __call($method, $arguments){
-        if(\in_array($method, self::METHOD_MAP)){
-           return call_user_func_array([$this->driver, $method], $arguments);   
+        if(\in_array($method, self::METHOD_MAP) || is_callable([$this->driver, $method]) ){
+			  return call_user_func_array([$this->driver, $method], $arguments);   
         }
+		
     }
     
     

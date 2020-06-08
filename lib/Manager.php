@@ -9,6 +9,10 @@ use frdl\mount\driver\Mapping;
 use frdl\mount\Repository;
 
 
+use org\bovigo\vfs\vfsStream;
+use org\bovigo\vfs\vfsStreamDirectory;
+use org\bovigo\vfs\vfsStreamWrapper;
+
 
 class Manager extends AbstractManager
 {
@@ -51,7 +55,7 @@ class Manager extends AbstractManager
 		}		
 		
 	  if (!is_null($scheme) && !is_null($mount) && self::mounted($scheme, $mount)){
-		self::$instance->driver = new Repository(self::driver_object($scheme, $mount));
+		self::$instance->driver = self::driver_object($scheme, $mount);
 	  }
 		
 	   return self::$instance;	
@@ -74,7 +78,7 @@ class Manager extends AbstractManager
    public static function getMappings(string $name=null, string $scheme=null){
 	$mappings = [];
 $mounts = array_merge(\frdl\mount\Manager::getInstance($scheme, $name)
-   ->getMountsByPath( $path),
+   ->getMountsByPath( $scheme.'://'.$name ),
 
  \frdl\mount\Manager::getInstance($scheme, $name)
    ->getMountsByStage($name, $scheme)
@@ -386,8 +390,8 @@ foreach($mounts as $mount){
 	    ],$opts);
 		
 	    	//  $dir = $options['directory'] . \DIRECTORY_SEPARATOR.$mountName;
-		     $dir = $options['directory'];
-		    if(!is_dir($dir))mkdir($dir, 0755, true);
+		  //   $dir = $options['directory'];
+		 //   if(!is_dir($dir))mkdir($dir, 0755, true);
 		
 			
 	
@@ -399,6 +403,47 @@ foreach($mounts as $mount){
 		
 	  return $driver;
     }
+	
+	
+    public function createVirtualDriver(array $opts = [], string $mountName = '', string $scheme = 'web+virtual'){
+		
+	
+		  $options = array_merge([
+	       'root' => $mountName,
+			'permissions'=>null,  
+			  'fs.virtual.structure'=>[				  
+				 
+			  ],
+	    //   'directory' => getcwd(),
+	    ],$opts);
+		
+		
+			
+	
+		$driver = $this->makeDriver('virtual', $options, $mountName, $scheme);	   
+		$driver->singleton(true);		  
+		$driver->registry('virtual', $driver);
+		
+		  
+
+
+
+  $structure = array_merge([
+	            $options['root'] => [
+                     'dummy-fs.txt'    => 'dummy-fs.txt contents ...',
+                ],
+
+		],
+						  
+		$options['fs.virtual.structure']); 	  
+	  
+	  
+     $mayFs =  vfsStream::setup($options['root'], null, $structure); 
+		
+	  return $driver;
+    }
+	
+	
 	
 	
 	
@@ -461,7 +506,7 @@ foreach($mounts as $mount){
 		$name = \strtolower($name);
 		
 		
-		if (!preg_match('/^[a-z0-9\.\_\-\+\*]+$/',$name))
+		if (''!==$name && !preg_match('/^[a-z0-9\.\_\-\+]+|\*|\~$/',$name))
 			throw new Exception("Invalid mount name '[".$scheme.'://<strong>'.$name."</strong>]'",104);
 		
 				
@@ -567,11 +612,11 @@ foreach($mounts as $mount){
 					return true;
 				//@stream_wrapper_unregister(self::$wrapper);
 				//return stream_wrapper_register(self::$wrapper,'MagicMounter\\Magic',($value?STREAM_IS_URL:0));
-                                  return self::alias(self::$wrapper,($value?STREAM_IS_URL:0));
+                          //        return self::alias(self::$wrapper,($value?STREAM_IS_URL:0));
 			case 'wrapper':
 				if ($value === null)		
 					return self::$wrapper;
-				if (!preg_match('/^[a-z0-9\.\+]+$/',$value))
+				if (!preg_match('/^[a-z][a-z0-9\.\+\-]+$/',$value))
 					throw new Exception('Illegal wrapper name, only a-z, 0-9,+, and dots are allowed.',2);
 				$url_stream = !stream_is_local(self::$wrapper.'://');
 				//@stream_wrapper_unregister(self::$wrapper);
@@ -708,34 +753,64 @@ foreach($mounts as $mount){
 		 self::init();
 		
 		$path_info = \parse_url($path);
+		$p_info = $path_info;
 		$this->scheme = $path_info['scheme'];
-		$this->mountName = $path_info['host'];
+		$this->mountName = (    ''===$path_info['host']
+							|| '*'===$path_info['host'] 
+							|| 1===count(explode('.', $path_info['host']))
+						   )
+						? ''
+						: $path_info['host']									  
+				        ;
 		
-	//	
+		$p_info['scheme'] =$this->scheme;
+		$p_info['host'] = $this->mountName;			
+		if(''===$this->mountName){
+			$p_info['path'] = $path_info['host'].'/'.ltrim($path_info['path'], '\\/');
+		}
+		
+		
 		
 		$this->driver = self::driver_object($this->scheme, $this->mountName);
+															  
+		if(!is_object($this->driver) || is_null($this->driver)){
+			$this->driver = self::driver_object($this->scheme, $path_info['host']);
+		}		
 		
+		if(!is_object($this->driver) || is_null($this->driver)){
+				$this->driver = self::$mounts[$this->scheme][$this->mountName];
+		}					
+															  
 		if(!is_object($this->driver) || is_null($this->driver)){
 			if('*'!==$this->mountName){
 				$this->driver = self::driver_object($this->scheme, '*');
 			}
 		}
-		
+															  
 		if(!is_object($this->driver) || is_null($this->driver)){
-				$this->driver = self::$mounts[$this->scheme][$this->mountName];
-		}		
+			if(''!==$this->mountName){
+				$this->driver = self::driver_object($this->scheme, '');
+			}
+		}
+		
+	
 		
 		if(!is_object($this->driver) || is_null($this->driver)){
 				$this->driver = self::$mounts[$this->scheme]['*'];
-		}				
+		}		
 		
-		if(is_object($this->driver) && !is_null($this->driver)){
-			return $this->driver->stream_open($path_info,$mode,$options,$opened_path,$this);
+		if(!is_object($this->driver) || is_null($this->driver)){
+				$this->driver = self::$mounts[$this->scheme][''];
+		}		
+				
+		
+		if(is_object($this->driver) && !is_null($this->driver)){			
+			$this->driver =  $this->driver->stream_open($p_info,$mode,$options,$opened_path,$this);
+			true;
 		}
 		
-			
-
-		  throw new Exception("Unknown mount '".$path_info['host']."'.",100);		
+	
+		  throw new Exception("Unknown mount '". $path_info['scheme']."://".$path_info['host']."'.");		
 	}
 
 	/**

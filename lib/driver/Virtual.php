@@ -15,6 +15,8 @@ use frdl\mount\DriverInterface;
 use org\bovigo\vfs\vfsStream;
 use org\bovigo\vfs\vfsStreamDirectory;
 use org\bovigo\vfs\vfsStreamWrapper;
+use org\bovigo\vfs\Quota;
+
 
 class Virtual extends Delegate
 {
@@ -23,20 +25,33 @@ class Virtual extends Delegate
     protected static $MountManager = null;
     protected $vfsStreamDirectory = null;
 	
+	protected $shouldBeSingleton = true;
 	
   public function __construct($options){   
-    $this->options['target'] = new vfsStreamWrapper;	  
+  	  
+	  $this->options = $options;
+	   $this->options['target'] = new vfsStreamWrapper;
+	
+
+	  $Wrapper = $this->options['target']; 
+	  $Wrapper::register();  	  
 	  
-    parent::__construct($options);
-	    
-   $this->rootDirectory(vfsStream::setup(
+     parent::__construct($this->options);
+
+			  
+
+	$this->rootDirectory(vfsStream::setup(
           $this->options['root'],
-         755,
+          $this->options['permissions'],
         $this->options['fs.virtual.structure']
-    ));
-	  
-	$Wrapper = $this->options['target'];
-		 $Wrapper::register();  
+    )); 
+
+   
+	  	  
+	 if(isset($this->options['quota']) && null !== $this->options['quota']){
+		vfsStreamWrapper::setQuota(new Quota($this->options['quota'])); 
+	 }
+
  }
 	
  protected function rootDirectory(vfsStreamDirectory $dir = null) :vfsStreamDirectory 
@@ -48,7 +63,7 @@ class Virtual extends Delegate
    return $this->vfsStreamDirectory;	 
  }
 
-public function getTargetStreamWrapper($method, $arguments) :\stdclass{
+public function getTargetStreamWrapper($method, $arguments) {
      $magic_stream = array_pop($arguments);	
 					
 	                         try{
@@ -69,25 +84,35 @@ public function getTargetStreamWrapper($method, $arguments) :\stdclass{
 	      [	  
 	  'key' => 'root', 		  
 		'required' => false,  
-                'default' => '~',
+                'default' => 'home',
 		'type' => function(string $i = null){
                      return \is_null($i) || \is_string($i) ;	
 		},
 		'hint' => 'Root: The Virtual FS HOME Directory.',     
 	      ],  
     
-		  
-		  
-	       [	  
-	  'key' => 'fs.virtual.structure', 		  
+		      [	  
+	     'key' => 'quota', 		  
 		'required' => false,  
-                'default' => [],
-		'type' => function(array $i = null){
-                     return \is_array($i);	
+         'default' => null,
+		'type' => function(int $i = null){
+               return \is_null($i) || \is_int($i) ;	
 		},
-		'hint' => 'Abstract Filesystem Structure and Contents AsArray (optional).',     
-	      ], 
+		'hint' => 'Root: The Virtual FS Quota.',     
+	      ],  
+    
 		  
+		  
+		      [	  
+	  'key' => 'permissions', 		  
+		'required' => false,  
+              'default' => null,
+		'type' => function( $i = null){
+                     return \is_null($i) || \is_int($i) ;	
+		},
+		'hint' => 'Root: The Virtual FS Permissions.',     
+	      ],  	  
+	   
 		  
        [	  
 	  'key' => 'directory', 		  
@@ -100,15 +125,24 @@ public function getTargetStreamWrapper($method, $arguments) :\stdclass{
 	      ],  
     
        
-  	  
+      [	  
+	  'key' => 'fs.virtual.structure', 		  
+		'required' => false,  
+                'default' => [],
+		'type' => function(array $i = null){
+                     return \is_array($i);	
+		},
+		'hint' => 'Abstract Filesystem Structure and Contents AsArray (optional).',     
+	      ], 
+		  	/*  
       [	  
 	  'key' => 'target', 		  
 		'required' => false,  
                 'default' =>  vfsStreamWrapper::class,
 		'type' => function(&$i){
-         if('vfs://'===$i){
-            return true;
-         }
+     //    if('vfs://'===$i){
+       //     return true;
+        // }
     
     
 		     if(\is_string($i)){
@@ -124,12 +158,12 @@ public function getTargetStreamWrapper($method, $arguments) :\stdclass{
 			        $i = $i['driver'];    
 		    }	
 			
-		    return \is_object($i) && ($i instanceof Driver || \is_callable([$i, 'stream_open']));	
+		    return \is_object($i) && ($i instanceof DriverInterface || \is_callable([$i, 'stream_open']));	
 		},
 		'hint' => 'Delegate this StreamWrapper to another target StreamWrapper.',    
 	      ],  
     
-    
+    */
 	  
 	  ];
 	}
