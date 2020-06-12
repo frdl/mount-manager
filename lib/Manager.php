@@ -744,6 +744,7 @@ foreach($mounts as $mount){
 
 
 
+
 	/**
 	 * StreamWrapper internal function
 	 * @internal
@@ -768,11 +769,19 @@ foreach($mounts as $mount){
 		if(''===$this->mountName){
 			$p_info['path'] = $path_info['host'].'/'.ltrim($path_info['path'], '\\/');
 		}
+			
 		
 		
+		$this->driver = self::driver_object($this->scheme, $this->mountName);			
+			
 		
-		$this->driver = self::driver_object($this->scheme, $this->mountName);
-															  
+		if(!is_object($this->driver) || is_null($this->driver)){			
+			
+				$this->driver =self::$mounts[$this->scheme][$this->mountName];			
+		}		
+		
+	
+		
 		if(!is_object($this->driver) || is_null($this->driver)){
 			$this->driver = self::driver_object($this->scheme, $path_info['host']);
 		}		
@@ -793,7 +802,9 @@ foreach($mounts as $mount){
 			}
 		}
 		
+		
 	
+					
 		
 		if(!is_object($this->driver) || is_null($this->driver)){
 				$this->driver = self::$mounts[$this->scheme]['*'];
@@ -804,14 +815,18 @@ foreach($mounts as $mount){
 		}		
 				
 		
+
+		
 		if(is_object($this->driver) && !is_null($this->driver)){			
-			$this->driver =  $this->driver->stream_open($p_info,$mode,$options,$opened_path,$this);
-			true;
+			 $this->driver->stream_open($p_info,$mode,$options,$opened_path,$this);
+			return $this->driver;
 		}
 		
 	
 		  throw new Exception("Unknown mount '". $path_info['scheme']."://".$path_info['host']."'.");		
 	}
+	
+	
 
 	/**
 	 * StreamWrapper internal function
