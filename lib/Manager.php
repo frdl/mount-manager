@@ -775,11 +775,7 @@ foreach($mounts as $mount){
 		$this->driver = self::driver_object($this->scheme, $this->mountName);			
 			
 		
-		if(!is_object($this->driver) || is_null($this->driver)){			
-			
-				$this->driver =self::$mounts[$this->scheme][$this->mountName];			
-		}		
-		
+	
 	
 		
 		if(!is_object($this->driver) || is_null($this->driver)){
@@ -819,7 +815,7 @@ foreach($mounts as $mount){
 		
 		if(is_object($this->driver) && !is_null($this->driver)){			
 			 $this->driver->stream_open($p_info,$mode,$options,$opened_path,$this);
-			return $this->driver;
+		
 		}
 		
 	
