@@ -519,21 +519,32 @@ final class TransactionalFileSystem
 
         if ($wrapper) {
 		
-		$session = self::getSession($protocol);
-		
-            if (null !== $root) {
-                 $content = Entity::newInstance($root, $session['tempPath']);
-            } else {
-           //     $content = null;
-	         $content = Entity::newInstance(new self, $session['tempPath']);
-	    }
 	
 		
-            
+			$session = self::getSession($protocol);
+			
+            if (null !== $root) {
+               //$content = Entity::newInstance($root, $session['tempPath']);
+			//	$content = Entity::newInstance($root);
+				//  $content = Virtual::newInstance(Entity::newInstance($root), $session['tempPath']);	
+				//	$content = Entity::newInstance($root);
+				 $session['tempPath'] = $root;
+            } else {
+           //  $content = null;
+	       //     $content = new self;
+			//	$content = Virtual::newInstance(Entity::newInstance($session['tempPath']), $session['tempPath']);	
+	    }
+	
+			
+			$entity = Virtual::newInstance(Entity::newInstance($session['tempPath']), $session['tempPath']);	
+		 //   $entity = Virtual::newInstance($content, $session['tempPath']);	
+              
+			
+			$partition = new Partition($entity);
 	  //   $entity = Virtual::newInstance($partition->getRoot(), $partition->getRealEntity()->path(), $partition->basename());	
-	    $entity = Virtual::newInstance($content, $session['tempPath']);	
+	        
 		
-	    $partition = new Partition($entity);
+	  
          	
             self::$partitions[$protocol] = $partition;
         }
