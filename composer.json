@@ -26,6 +26,7 @@
     "adlawson/vfs" : "0.12.1",
     "niels-nijens/protocol-stream" : "1.0.2",
     "mikey179/vfsstream" : "1.6.8",
+    "php-vfs/php-vfs": "1.4.1",
     "webmozart/glob" : "4.1.0"
 },
 "autoload": {
