@@ -525,7 +525,7 @@ final class TransactionalFileSystem
                  $content = Entity::newInstance($root, $session['tempPath']);
             } else {
            //     $content = null;
-	         $content = Entity::newInstance(new FileSystem(), $session['tempPath']);
+	         $content = Entity::newInstance(new self, $session['tempPath']);
 	    }
 	
 		
