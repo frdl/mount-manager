@@ -539,6 +539,7 @@ final class TransactionalFileSystem
         }
 
         return $wrapper;
+	    
     }
 
     /**
