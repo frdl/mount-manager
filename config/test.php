@@ -36,13 +36,8 @@ return [
               'scheme' =>  'web+vfs',
               'type' => 'virtual',
               'options' => [
-                   'root' => '~',
-                    'fs.virtual.structure' => [
+                   'scheme' => 'virtual',
                     
-                    ],
-                    'directory' => null,
-                    
-                    'target' => new vfsStreamWrapper()
               ],
 	    
 	 ]
