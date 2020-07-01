@@ -23,22 +23,20 @@ return [
              'manager' => Manager::class,
        ],
  ]),
- 'services' => add([
- 
- ]),
+
  'managers' => add([
         'mounting' => [
              'class' => Manager::class,
         ],
  
  ]),
- 'drivers' => [
- 
- ], 
  'mounts' => [
  
  ],
-
+/*
+ 'drivers' => [
+ 
+ ], 
  'protocols' => [
  
  ],
@@ -60,7 +58,7 @@ return [
       'proxy',	 
  ],
 
-
+*/
 ];
 
 
