@@ -498,7 +498,7 @@ final class TransactionalFileSystem
             } while (file_exists($name));	
 		
 	   $_SESSION[$k] = [
-		'lasthit' => = time(),
+		'lasthit' =>  time(),
 		'tempPath' =>   $name, 
 	   ];
 	}
