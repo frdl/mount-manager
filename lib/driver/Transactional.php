@@ -26,6 +26,8 @@ use frdl\mount\Manager;
 use frdl\mount\DriverInterface;
 use frdl\mount\Exception;
 
+use Covex\Stream\File\Virtual;
+use Covex\Stream\File\VirtualInterface;
 
 
 class Transactional extends \frdl\mount\driver\Delegate
@@ -472,7 +474,39 @@ final class TransactionalFileSystem
 
     /**
      * Register stream wrapper.
+     
+         $real = Entity::newInstance(__FILE__);
+        $virtual = Virtual::newInstance($real, '/tmp/qqq');
+
+        $this->assertEquals($real->basename(), $virtual->basename());
+        $this->assertEquals('/tmp/qqq', $virtual->path());
+        $this->assertEquals($real, $virtual->getRealEntity());
+	
      */
+	
+	
+    public static function getSession($scheme){
+	 $k = self::class.'@'.$scheme;
+	if(isset($_SESSION) && isset($_SESSION[$k]) && is_array($_SESSION[$k]) ){
+	    $_SESSION[$k]['lasthit'] = time();       
+	}else{
+	      
+            $tempDir = rtrim(sys_get_temp_dir(), '\\/');
+
+            do {
+                $name = $tempDir.'/'.uniqid('vfs', true);
+            } while (file_exists($name));	
+		
+	   $_SESSION[$k] = [
+		'lasthit' => = time(),
+		'tempPath' =>   $name, 
+	   ];
+	}
+	    
+        return $_SESSION[$k];	  
+    }
+	
+	
     public static function register(string $protocol, string $root = null, int $flags = 0): bool
     {
         $wrappers = stream_get_wrappers();
@@ -484,14 +518,23 @@ final class TransactionalFileSystem
         $wrapper = stream_wrapper_register($protocol, get_called_class(), $flags);
 
         if ($wrapper) {
+		
+		$session = self::getSession($protocol);
+		
             if (null !== $root) {
-                $content = Entity::newInstance($root);
+                 $content = Entity::newInstance($root, $session['tempPath']);
             } else {
-                $content = null;
-            }
-
-            $partition = new Partition($content);
-
+           //     $content = null;
+	         $content = Entity::newInstance(new FileSystem(), $session['tempPath']);
+	    }
+	
+		
+            
+	  //   $entity = Virtual::newInstance($partition->getRoot(), $partition->getRealEntity()->path(), $partition->basename());	
+	    $entity = Virtual::newInstance($content, $session['tempPath']);	
+		
+	    $partition = new Partition($entity);
+         	
             self::$partitions[$protocol] = $partition;
         }
 
