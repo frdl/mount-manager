@@ -1,4 +1,4 @@
-<?php
+<<?php
 
 namespace frdl\mount\driver;
 /*
@@ -61,15 +61,12 @@ class Transactional extends \frdl\mount\driver\Delegate
          $this->options=array_merge([
                         'scheme' => 'frdl',
                         'directory' => null,
-			   
+			             'target'=>TransactionalFileSystem::class,
                     ], $opts);        
                
                
 	
-		 $this->options['target'] = new TransactionalFileSystem;
-		
-		
-	
+
 		
 		
               
@@ -158,9 +155,13 @@ public static function getOptions() :array{
     public function register(string $protocol, string $root = null, int $flags = 0)
     {
 		
-		$class = get_class($this->options['target']);
-		$class::register( $protocol,  $root,  $flags);
-
+		$class = (is_string($this->options['target']))
+			 ? $this->options['target']
+			 : get_class($this->options['target']);
+		
+		 $this->options['target'] = $class::register( $protocol,  $root,  $flags);
+		\register_shutdown_function([$this, 'save'], []);
+		return $this;
     }
 
 	
@@ -177,7 +178,21 @@ public static function getOptions() :array{
 		
 		return TransactionalFileSystem::commit($url);
 	}         
-   
+	
+
+	public function save()
+    {
+	
+	//todo...
+    }
+/*
+		
+	public function __destruct()
+    {
+				
+	}
+	
+	*/
 }
 
 
@@ -188,29 +203,50 @@ final class TransactionalFileSystem
     /**
      * @var Partition[]
      */
-    private static $partitions = [];
-
+    protected static $partitions = [];
+    protected $partition;
+	protected $entity;
     /**
      * @var array
      */
-    private $dirFiles;
+    protected $dirFiles;
 
     /**
      * @var resource
      */
-    private $filePointer;
+    protected $filePointer;
 
     /**
      * @var EntityInterface
      */
-    private $fileEntity;
+    protected $fileEntity;
 
-    public function __construct()
+	protected $protocol;
+	
+    public function __construct($protocol = null, $partition = null, $entity=null)
     {
+		$this->protocol = $protocol;
+		$this->partition = $partition;
+    	$this->entity =$entity;
+		
         $this->filePointer = null;
         $this->fileEntity = null;
     }
+	
+    public function dump()
+    {
+		$obj = new \stdclass;
+		$obj->entity = $this->entity;
+		$obj->partition = $this->partition;
+        $obj->filePointer =  $this->filePointer;
+        $obj->fileEntity =  $this->fileEntity;
+		$obj->protocol = $this->protocol;
+		$o =$obj;
+		return $o;
+    }
 
+	
+	
     /**
      * Retrieve information about a file.
      *
@@ -218,10 +254,10 @@ final class TransactionalFileSystem
      */
     public function url_stat(string $url, int $flags)
     {
-        $partition = static::getPartition($url);
+        $this->partition = static::getPartition($url);
         $path = static::getRelativePath($url);
 
-        return $partition->getStat($path, $flags);
+        return $this->partition->getStat($path, $flags);
     }
 
     /**
@@ -231,10 +267,10 @@ final class TransactionalFileSystem
      */
     public function mkdir(string $url, int $mode, int $options): bool
     {
-        $partition = self::getPartition($url);
+        $this->partition = self::getPartition($url);
         $path = self::getRelativePath($url);
 
-        return (bool) $partition->makeDirectory($path, $mode, $options);
+        return (bool) $this->partition->makeDirectory($path, $mode, $options);
     }
 
     /**
@@ -244,10 +280,10 @@ final class TransactionalFileSystem
      */
     public function rmdir(string $url, int $options): bool
     {
-        $partition = self::getPartition($url);
+        $this->partition = self::getPartition($url);
         $path = self::getRelativePath($url);
 
-        return (bool) $partition->removeDirectory($path, $options);
+        return (bool) $this->partition->removeDirectory($path, $options);
     }
 
     /**
@@ -257,10 +293,10 @@ final class TransactionalFileSystem
      */
     public function unlink(string $url): bool
     {
-        $partition = self::getPartition($url);
+        $this->partition = self::getPartition($url);
         $path = self::getRelativePath($url);
 
-        return (bool) $partition->deleteFile($path);
+        return (bool) $this->partition->deleteFile($path);
     }
 
     /**
@@ -270,12 +306,12 @@ final class TransactionalFileSystem
      */
     public function rename(string $srcPath, string $dstPath): bool
     {
-        $partition = self::getPartition($srcPath);
+        $this->partition = self::getPartition($srcPath);
 
         $srcRelativePath = self::getRelativePath($srcPath);
         $dstRelativePath = self::getRelativePath($dstPath);
 
-        return (bool) $partition->rename($srcRelativePath, $dstRelativePath);
+        return (bool) $this->partition->rename($srcRelativePath, $dstRelativePath);
     }
 
     /**
@@ -285,10 +321,10 @@ final class TransactionalFileSystem
      */
     public function dir_opendir(string $url): bool
     {
-        $partition = self::getPartition($url);
+        $this->partition = self::getPartition($url);
         $path = self::getRelativePath($url);
 
-        $files = $partition->getList($path);
+        $files = $this->partition->getList($path);
         if (is_array($files)) {
             $this->dirFiles = [];
             foreach ($files as $file) {
@@ -354,10 +390,10 @@ final class TransactionalFileSystem
      */
     public function stream_open(string $url, string $mode, int $options, ?string &$openedPath): bool
     {
-        $partition = self::getPartition($url);
+        $this->partition = self::getPartition($url);
         $path = self::getRelativePath($url);
 
-        $this->filePointer = $partition->fileOpen(
+        $this->filePointer = $this->partition->fileOpen(
             $path, $mode, $options
         );
 
@@ -394,7 +430,7 @@ final class TransactionalFileSystem
      *
      * @see http://www.php.net/manual/en/streamwrapper.stream-stat.php
      */
-    public function stream_stat(): array
+    public function stream_stat()//: array
     {
         return fstat($this->filePointer);
     }
@@ -458,12 +494,12 @@ final class TransactionalFileSystem
      */
     public function stream_metadata(string $url, int $option, $value): bool
     {
-        $partition = self::getPartition($url);
+        $this->partition = self::getPartition($url);
         $path = self::getRelativePath($url);
 
         switch ($option) {
             case STREAM_META_TOUCH:
-                $result = $partition->touch($path, $value[1] ?? null, $value[2] ?? null) ? true : false;
+                $result = $this->partition->touch($path, $value[1] ?? null, $value[2] ?? null) ? true : false;
                 break;
             default:
                 $result = false;
@@ -483,31 +519,57 @@ final class TransactionalFileSystem
         $this->assertEquals($real, $virtual->getRealEntity());
 	
      */
+	public static function getSessionHash($scheme, $location = null){
+		$k = $scheme.'://@'.self::class;
+		$k2 = strlen($location).'-'.\sha1($location);
+		if(!isset($_SESSION[$k])){
+			$_SESSION[$k] = [];
+		}
 	
-	
-    public static function getSession($scheme){
-	 $k = self::class.'@'.$scheme;
-	if(isset($_SESSION) && isset($_SESSION[$k]) && is_array($_SESSION[$k]) ){
-	    $_SESSION[$k]['lasthit'] = time();       
-	}else{
-	      
-            $tempDir = rtrim(sys_get_temp_dir(), '\\/');
-
-            do {
-                $name = $tempDir.'/'.uniqid('vfs', true);
-            } while (file_exists($name));	
+		if(!isset($_SESSION[$k][$k2])){
+			$_SESSION[$k][$k2] = [];
+		}
 		
-	   $_SESSION[$k] = [
-		'lasthit' =>  time(),
-		'tempPath' =>   $name, 
-	   ];
+		 $_SESSION[$k][$k2]['lasthit'] = time();       
+		
+		return [
+		   $k1,
+		   $k2,
+		];
 	}
+	
+    public static function getSession($scheme, $location = null){
+		list($k, $k2)=self::getSessionHash($scheme, $location);
+		
+		
+
+		if(!isset($_SESSION[$k][$k2]['tempPath'])){
+			$_SESSION[$k][$k2]['tempPath'] = self::getTempLocation($location);
+		}
+
+	
 	    
-        return $_SESSION[$k];	  
+        return $_SESSION[$k][$k2];	  
     }
 	
 	
-    public static function register(string $protocol, string $root = null, int $flags = 0): bool
+	
+	public static function getTempLocation($location = null){
+			      
+   		 $tempDir = (!getenv('FRDL_CACHE_DIR') ) ?  rtrim(\sys_get_temp_dir(), '\\/') : rtrim(getenv('FRDL_CACHE_DIR'), '\\/').\DIRECTORY_SEPARATOR.'trasnactional-fs';
+         if(is_string($location) ){      
+	    	 $name = $tempDir.\DIRECTORY_SEPARATOR.$location;
+		 }else{
+            do {
+                $name = $tempDir.\DIRECTORY_SEPARATOR.uniqid('vfs', true);
+            } while (file_exists($name));	
+		 }
+		
+	   return $name;	
+	}
+	
+	
+    public static function register(string $protocol, string $root = null, int $flags = 0): self
     {
         $wrappers = stream_get_wrappers();
         if (in_array($protocol, $wrappers)) {
@@ -516,50 +578,71 @@ final class TransactionalFileSystem
             );
         }
         $wrapper = stream_wrapper_register($protocol, get_called_class(), $flags);
-
+     	
+				
+ 
         if ($wrapper) {
-		
-	
-		
-			$session = self::getSession($protocol);
-			
-            if (null !== $root) {
-               //$content = Entity::newInstance($root, $session['tempPath']);
-			//	$content = Entity::newInstance($root);
-				//  $content = Virtual::newInstance(Entity::newInstance($root), $session['tempPath']);	
-				//	$content = Entity::newInstance($root);
-				 $session['tempPath'] = $root;
-            } else {
-           //  $content = null;
-	       //     $content = new self;
-			//	$content = Virtual::newInstance(Entity::newInstance($session['tempPath']), $session['tempPath']);	
-	    }
 	
 			
-			$entity = Virtual::newInstance(Entity::newInstance($session['tempPath']), $session['tempPath']);	
-		 //   $entity = Virtual::newInstance($content, $session['tempPath']);	
-              
+			$session = self::getSession($protocol, $root);
+	
+	
 			
-			$partition = new Partition($entity);
-	  //   $entity = Virtual::newInstance($partition->getRoot(), $partition->getRealEntity()->path(), $partition->basename());	
-	        
+			
+			$entity = Entity::newInstance($root);	
+			
 		
-	  
-         	
-            self::$partitions[$protocol] = $partition;
-        }
-
-        return $wrapper;
-	    
+			
+		 $entity= Virtual::newInstance($entity, $session['tempPath']);	
+			
+				
+			
+		 $entity =$entity->getRealEntity();
+			
+			
+		
+			$partition = new Partition($entity );
+       
+				 
+				$fileSystem = new self($protocol, $partition , $entity);	  			
+	
+			
+			
+            self::$partitions[$protocol] =  $fileSystem; 
+        }else{
+			$fileSystem= self::$partitions[$protocol];
+		// print_r(self::$partitions[$protocol]);
+		}
+		
+	
+	
+     
+	    return $fileSystem;
     }
+	
 
-    /**
+
+
+	public function __destruct()
+    { 
+	   if(\is_resource($this->filePointer)){
+	         $this->stream_close();
+	   }
+	   	
+    }
+	 
+	
+	
+	
+     /**	 
      * Commit all changes to real FS.
      */
     public static function commit(string $protocol): bool
     {
-        if (isset(self::$partitions[$protocol])) {
-            self::$partitions[$protocol]->commit();
+        if (
+		//	isset(self::$partitions[$protocol]) && 
+			null !==  self::getPartition($protocol.'://')) {
+            self::getPartition($protocol.'://')->commit();
 
             $result = true;
         } else {
@@ -605,7 +688,9 @@ final class TransactionalFileSystem
     {
         $urlParts = explode('://', $url);
         $protocol = array_shift($urlParts);
-
-        return self::$partitions[$protocol] ?? null;
+         if(!isset(self::$partitions[$protocol])) {
+			return null; 
+		 }
+        return self::$partitions[$protocol]->dump()->partition ?? null;
     }
 }
