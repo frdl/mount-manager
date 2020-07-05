@@ -24,10 +24,8 @@
     ],	
 "require" : { 
     "php": ">=7.2",
-    "frdl/frdlweb-composer-installers" : "*",
     "steevanb/php-typed-array" : "2.1.2",	
     "degraciamathieu/manager" : "1.1.1",
-    "frdl/web" : "*",
     "covex-nn/vfs" : "1.0.2",
     "adlawson/vfs" : "0.12.1",
     "niels-nijens/protocol-stream" : "1.0.2",
@@ -35,6 +33,10 @@
     "php-vfs/php-vfs": "1.4.1",
     "webmozart/glob" : "4.1.0"
 },
+"require-dev" : {
+    "frdl/frdlweb-composer-installers" : "*",
+    "frdl/web" : "*"	
+},	
 "autoload": {
           "psr-4" : {
 	      "frdl\\mount\\": "lib/"	  
