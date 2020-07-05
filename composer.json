@@ -16,6 +16,12 @@
 		"homepage": "https://webfan.de"
 		}
 	],
+    "repositories": [
+        {
+            "type": "composer",
+            "url": "https:\/\/packages.frdl.de"
+        }
+    ],	
 "require" : { 
     "php": ">=7.2",
     "frdl/frdlweb-composer-installers" : ">=0.2",
