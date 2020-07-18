@@ -29,7 +29,7 @@ return [
 		return $Manager;
 	},	
 	
-	
+/*	
 'config.managers.mounting' => add([		
          [
               'name' => 'vhost.test',
@@ -55,7 +55,7 @@ return [
 	],
 	
 ]),
-
+*/
 ];
 
 
