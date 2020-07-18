@@ -48,7 +48,7 @@
   "extra": {
     "config-plugin-output-dir": "config/",
     "config-plugin": {
-	"mountmap": "../../../modules/frdl.mount-manager/level-2/config/extension.php"
+	"mountmap": "../../../modules/frdl.mount-manager/level-2/config/extension.php",
         "common": [
             "$mountmap"
         ]
