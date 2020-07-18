@@ -31,7 +31,9 @@
     "niels-nijens/protocol-stream" : "1.0.2",
     "mikey179/vfsstream" : "1.6.8",
     "php-vfs/php-vfs": "1.4.1",
-    "webmozart/glob" : "4.1.0"
+    "webmozart/glob" : "4.1.0",
+    "filicious/sftp" : "dev-master",
+    "knplabs/gaufrette" : "0.9.0"
 },
 "require-dev" : {
     "frdl/frdlweb-composer-installers" : "*",
