@@ -25,43 +25,31 @@ return [
  ]),
 
  'managers' => add([
-        'mounting' => [
-             'class' => Manager::class,
-        ],
+    'mounting' => [
+        [
+              'name' => 'v.test',
+              'scheme' =>  'web+vfs',
+              'type' => 'virtual',
+              'options' => [
+                   'scheme' => 'virtual',
+                    
+              ],	
+	   ],	      
+            
+	[
+              'name' => 'project',
+              'scheme' =>  'web+project',
+              'type' => 'transactional',
+               'options' => [
+                    'scheme'=> 'project',
+                    'directory' => get('root.dir'),
+              ],    		    
+	   
+	],
+
+   ],
  
  ]),
- 'mounts' => [
- 
- ],
-/*
- 'drivers' => [
- 
- ], 
- 'protocols' => [
- 
- ],
 
 
-
- 'domains' => [
- 
- ],
-
-
-
- 'stages' => [
-      'init',
-      'workspace',	 
-      'dev',	 
-      'green',
-      'blue',
-      'proxy',	 
- ],
-
-*/
 ];
-
-
-		  
-		  
-	 
